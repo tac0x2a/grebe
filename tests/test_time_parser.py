@@ -8,7 +8,7 @@ from datetime import datetime, timezone, timedelta
 
 def assertConverted(src, expected):
     res = time_parser.elastic_time_parse(src)
-    assert res == expected
+    assert expected == res
 
 def assertNotValid(src):
     assert src == time_parser.elastic_time_parse(src)

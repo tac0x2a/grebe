@@ -25,20 +25,29 @@ def guess_type_str(str_value):
 
     return ["String", value]
 
-def json2lcickhouse_sub(key, body, values, types):
+def json2lcickhouse_sub(key, body, types, values):
     if type(body) is map:
         for child_key, child_value in body.items():
-            json2lcickhouse_sub(child_key, child_value, values, types)
+            json2lcickhouse_sub(child_key, child_value, types, values)
 
-    # Number?
-    if type(body) is float:
-        values[key] = float(value)
+    # is atomic type.
+    value = body
+
+    if type(value) is float:
+        values[key] = str(float(value))
         types[key] = "Float64"
-    if type(body) is int:
-        return ["Float64", int(body)]
-    if type(body) is bool:
-        v = 1 if body else 0
-        return ["UInt8", v]
+        return
+    if type(value) is int:
+        values[key] = str(int(value))
+        types[key] = "Float64"
+        return
+    if type(value) is bool:
+        values[key] = '1' if value else '0'
+        types[key] = "UInt8"
+        return
+
+    values[key] = str(value)
+    types[key] = "String"
 
     return
 
@@ -50,7 +59,7 @@ def json2lcickhouse(src_json_str, logger = None):
     values = {}
 
     for key, value in body.items():
-        json2lcickhouse_sub(key, body, types, values)
+        json2lcickhouse_sub(key, value, types, values)
 
     return [types, values]
 

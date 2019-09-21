@@ -3,6 +3,7 @@ from util import time_parser
 
 import json
 import datetime
+from dateutil.tz import tzutc
 
 def guess_type(value):
     # Number?
@@ -21,14 +22,12 @@ def guess_type_str(str_value):
     if type(value) is datetime.datetime:
         return ["DateTime", value]
 
-
-
     return ["String", value]
 
 def json2lcickhouse_sub(key, body, types, values):
-    if type(body) is map:
-        for child_key, child_value in body.items():
-            json2lcickhouse_sub(child_key, child_value, types, values)
+    # if type(body) is map:
+    #     for child_key, child_value in body.items():
+    #         json2lcickhouse_sub(child_key, child_value, types, values)
 
     # is atomic type.
     value = body
@@ -45,6 +44,18 @@ def json2lcickhouse_sub(key, body, types, values):
         values[key] = '1' if value else '0'
         types[key] = "UInt8"
         return
+
+    # is string. try to parse as datetime.
+    try:
+        [dt, ns] = time_parser.elastic_time_parse(value)
+        values[key] = dt.astimezone(tz=tzutc()).strftime("%Y-%m-%d %H:%M:%S")
+        types[key] = "DateTime"
+        # Clickhouse can NOT contain ms in DateTime column.
+        values[key + "_ns"] = str(ns)
+        types[key + "_ns"] = "UInt32"
+        return
+    except ValueError as e:
+        pass
 
     values[key] = str(value)
     types[key] = "String"

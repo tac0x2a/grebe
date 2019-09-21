@@ -3,14 +3,22 @@ import time
 from dateutil.parser import parse
 from dateutil.tz import tzutc
 
+import re
+
+NanosecPattern = re.compile(r".+\.(\d+).*")
+
 def elastic_time_parse(src, logger = None):
-    """Parse src string as datetime. Ignore nanosec order. If src is NOT valid format, return it self as string."""
-    try:
-        ret = parse(src)
-        if ret.tzinfo == None:
-            ret = ret.replace(tzinfo = tzutc())
+    """Parse src string as datetime and nanosec part. Raise exception if src format is NOT valid. """
+    nano = 0
 
-    except ValueError as e:
-        ret = src
+    ret = parse(src)
+    if ret.tzinfo == None:
+        ret = ret.replace(tzinfo = tzutc())
 
-    return ret
+    print(ret)
+
+    m = NanosecPattern.match(src)
+    if(m != None):
+        nano = int(m.group(1)[0:9].ljust(9, '0'))
+
+    return [ret, nano]

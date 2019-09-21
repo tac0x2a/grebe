@@ -43,5 +43,17 @@ def test_return_DateTime_and_UInt32_type_if_DateTime_like_string_provided():
     res = dbms_clickhouse.json2lcickhouse(src)
     assert expected == res
 
+def test_return_nested_values_splited_by__():
+  src = """
+    { "hello" : 42, "world" : { "value" : 128.4, "bool" : true, "deep" : {"str" : "Hello,World" } } }
+    """
+
+  expected = [
+      {"hello" : "Float64", "world__value" : "Float64", "world__bool" : "UInt8", "world__deep__str" : "String"},
+      {"hello" : "42",      "world__value" : "128.4",   "world__bool" : "1",     "world__deep__str" : "Hello,World"}
+    ]
+  res = dbms_clickhouse.json2lcickhouse(src)
+  assert expected == res
+
 if __name__ == '__main__':
     pytest.main(['-v', __file__])

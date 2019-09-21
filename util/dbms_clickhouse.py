@@ -25,9 +25,10 @@ def guess_type_str(str_value):
     return ["String", value]
 
 def json2lcickhouse_sub(key, body, types, values):
-    # if type(body) is map:
-    #     for child_key, child_value in body.items():
-    #         json2lcickhouse_sub(child_key, child_value, types, values)
+    if type(body) is dict:
+        for child_key, child_value in body.items():
+            json2lcickhouse_sub(key + "__" + child_key, child_value, types, values)
+        return
 
     # is atomic type.
     value = body

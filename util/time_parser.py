@@ -15,8 +15,6 @@ def elastic_time_parse(src, logger = None):
     if ret.tzinfo == None:
         ret = ret.replace(tzinfo = tzutc())
 
-    print(ret)
-
     m = NanosecPattern.match(src)
     if(m != None):
         nano = int(m.group(1)[0:9].ljust(9, '0'))

@@ -5,22 +5,29 @@ import json
 import datetime
 from dateutil.tz import tzutc
 
-def guess_type_numbers(value):
-    if type(value) is float:
-        return
-        values[key] = str(float(value))
-        types[key] = "Float64"
-        return
-    if type(value) is int:
-        values[key] = str(int(value))
-        types[key] = "Float64"
-        return
-    if type(value) is bool:
-        values[key] = '1' if value else '0'
-        types[key] = "UInt8"
-        return
+def json2clickhouse_sub_list(key, list, types, values):
+    items = []
+    items_ns = []
+    for idx_i, v in enumerate(list):
+        idx = str(idx_i)
+        temp_type = {}
+        temp_value = {}
+        json2lcickhouse_sub(idx, v, temp_type, temp_value)
+        items.append(temp_value[idx])
+        types[key] = "Array({})".format(temp_type[idx])
+
+        # for DateTime Array
+
+        if (idx + "_ns") in temp_type.keys():
+            items_ns.append(temp_value[idx + "_ns"])
+            types[key + "_ns"] = "Array({})".format(temp_type[idx + "_ns"])
+
+    values[key] = str(items)
+    if len(items_ns) > 0:
+        values[key + "_ns"] = str(items_ns)
 
     return
+
 
 def json2lcickhouse_sub(key, body, types, values):
     if type(body) is dict:
@@ -29,16 +36,7 @@ def json2lcickhouse_sub(key, body, types, values):
         return
 
     if type(body) is list:
-        items = []
-        for idx, v in enumerate(body):
-            temp_type = {}
-            temp_value = {}
-            json2lcickhouse_sub(idx, v, temp_type, temp_value)
-            items.append(temp_value[idx])
-            types[key] = "Array({})".format(temp_type[idx])
-
-        values[key] = str(items)
-
+        json2clickhouse_sub_list(key, body, types, values)
         return
 
     # is atomic type.

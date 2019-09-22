@@ -67,6 +67,21 @@ def test_return_array_values():
   res = dbms_clickhouse.json2lcickhouse(src)
   assert expected == res
 
+def test_return_String_array_values_if_DateTime_like_strings():
+  src = """
+    {"hello" : ["2018/11/14", "2018/11/15 11:22:33.123456789"]}
+    """
+
+  expected = [{
+        "hello"    : "Array(DateTime)",
+        "hello_ns" : "Array(UInt32)"
+      },
+      {
+        "hello"    : "['2018-11-14 00:00:00', '2018-11-15 11:22:33']",
+        "hello_ns" : "[0, 123456789]"
+      }]
+  res = dbms_clickhouse.json2lcickhouse(src)
+  assert expected == res
 
 if __name__ == '__main__':
     pytest.main(['-v', __file__])

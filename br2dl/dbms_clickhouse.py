@@ -1,5 +1,5 @@
 
-from util import time_parser
+from br2dl import time_parser
 
 import json
 import datetime
@@ -100,4 +100,3 @@ def json2lcickhouse(src_json_str, logger = None):
         values_as_string[k] = str(v)
 
     return [types, values_as_string]
-

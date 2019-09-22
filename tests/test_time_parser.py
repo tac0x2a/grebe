@@ -1,6 +1,6 @@
 
 import pytest
-from util import time_parser
+from br2dl import time_parser
 from datetime import datetime, timezone, timedelta
 
 def assertConverted(src, expected_time, expected_ns):

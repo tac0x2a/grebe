@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import pytest
-from util import dbms_clickhouse
+from br2dl import dbms_clickhouse
 
 from datetime import datetime, timezone, timedelta
 

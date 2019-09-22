@@ -8,23 +8,31 @@ from dateutil.tz import tzutc
 def json2clickhouse_sub_list(key, list, types, values):
     items = []
     items_ns = []
+    types[key] = "Array(String)"
     for idx_i, v in enumerate(list):
+        if isinstance(v, type(list)) or (type(v) is dict):
+            items.append(json.dumps(v))
+            continue
+
         idx = str(idx_i)
         temp_type = {}
         temp_value = {}
+
         json2lcickhouse_sub(idx, v, temp_type, temp_value)
         items.append(temp_value[idx])
+
         types[key] = "Array({})".format(temp_type[idx])
 
         # for DateTime Array
-
         if (idx + "_ns") in temp_type.keys():
             items_ns.append(temp_value[idx + "_ns"])
             types[key + "_ns"] = "Array({})".format(temp_type[idx + "_ns"])
 
-    values[key] = str(items)
+    values[key] = items
+
+    # for DateTime Array
     if len(items_ns) > 0:
-        values[key + "_ns"] = str(items_ns)
+        values[key + "_ns"] = items_ns
 
     return
 
@@ -83,7 +91,13 @@ def json2lcickhouse(src_json_str, logger = None):
         json2lcickhouse_sub(key, value, types, values)
 
     # convert as string for clickhouse query.
-    values = { k : str(v) for k,v in values.items() }
+    values_as_string = {}
+    for k,v in values.items():
+        print(v)
+        print(type(v))
+        if type(v) is str:
+            v = "'" + v + "'"
+        values_as_string[k] = str(v)
 
-    return [types, values]
+    return [types, values_as_string]
 

@@ -55,5 +55,18 @@ def test_return_nested_values_splited_by__():
   res = dbms_clickhouse.json2lcickhouse(src)
   assert expected == res
 
+def test_return_array_values():
+  src = """
+    { "hello" : [42, -84, 128], "world" : [128.4, -255.3], "bool" : [true, false, true, false],  "str" : ["Hello", "World", "Hoge"]}
+    """
+
+  expected = [
+      {"hello" : "Array(Float64)", "world" : "Array(Float64)", "bool" : "Array(UInt8)", "str" : "Array(String)"},
+      {"hello" : "[42, -84, 128]",   "world" : "[128.4, -255.3]",  "bool" : "[1, 0, 1, 0]",   "str" : "['Hello', 'World', 'Hoge']"}
+    ]
+  res = dbms_clickhouse.json2lcickhouse(src)
+  assert expected == res
+
+
 if __name__ == '__main__':
     pytest.main(['-v', __file__])

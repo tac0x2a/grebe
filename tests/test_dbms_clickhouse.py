@@ -176,9 +176,8 @@ def test_return_query_get_schema_table_by_source_id():
 
 def test_return_query_create_data_table():
   expected = dbms_clickhouse.query_create_data_table({"sample_f": "Float64", "sample_b": "UInt8"}, "sample_data_table_001")
-  actual   = "CREATE TABLE IF NOT EXISTS sample_data_table_001 (__uid Int64, __create_at DateTime DEFAULT now(), __collected_at DateTime, \"sample_f\" Float64, \"sample_b\" UInt8) ENGINE = MergeTree PARTITION BY toYYYYMM(__create_at) ORDER BY (__uid)"
+  actual   = "CREATE TABLE IF NOT EXISTS sample_data_table_001 (\"sample_f\" Float64, \"sample_b\" UInt8, __create_at DateTime DEFAULT now(), __collected_at DateTime, __uid UUID DEFAULT generateUUIDv4()) ENGINE = MergeTree PARTITION BY toYYYYMM(__create_at) ORDER BY (__create_at)"
   assert expected == actual
-
 
 
 if __name__ == '__main__':

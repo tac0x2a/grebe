@@ -66,7 +66,7 @@ def json2lcickhouse_sub(key, body, types, values):
     # is string. try to parse as datetime.
     try:
         [dt, ns] = time_parser.elastic_time_parse(value)
-        values[key] = dt #dt.astimezone(tz=tzutc()).strftime("%Y-%m-%d %H:%M:%S")
+        values[key] = dt
         types[key] = "DateTime"
         # Clickhouse can NOT contain ms in DateTime column.
         values[key + "_ns"] = ns
@@ -118,7 +118,7 @@ def query_get_schema_table_by_source_id(source_id, schema_table_name = "schema_t
 
 def query_create_data_table(column_types_map, data_table_name):
     columns_def_string = ", ".join([ "\"{}\" {}".format(c,t) for c,t in column_types_map.items() ])
-    return "CREATE TABLE IF NOT EXISTS {} (__uid Int64, __create_at DateTime DEFAULT now(), __collected_at DateTime, {}) ENGINE = MergeTree PARTITION BY toYYYYMM(__create_at) ORDER BY (__uid)".format(
+    return "CREATE TABLE IF NOT EXISTS {} ({}, __create_at DateTime DEFAULT now(), __collected_at DateTime, __uid UUID DEFAULT generateUUIDv4()) ENGINE = MergeTree PARTITION BY toYYYYMM(__create_at) ORDER BY (__create_at)".format(
         data_table_name,
         columns_def_string
     )

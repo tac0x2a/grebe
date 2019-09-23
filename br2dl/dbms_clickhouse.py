@@ -66,7 +66,7 @@ def json2lcickhouse_sub(key, body, types, values):
     # is string. try to parse as datetime.
     try:
         [dt, ns] = time_parser.elastic_time_parse(value)
-        values[key] = dt.astimezone(tz=tzutc()).strftime("%Y-%m-%d %H:%M:%S")
+        values[key] = dt #dt.astimezone(tz=tzutc()).strftime("%Y-%m-%d %H:%M:%S")
         types[key] = "DateTime"
         # Clickhouse can NOT contain ms in DateTime column.
         values[key + "_ns"] = ns
@@ -92,12 +92,12 @@ def json2lcickhouse(src_json_str, logger = None):
 
     # convert as string for clickhouse query.
     values_as_string = {}
-    for k,v in values.items():
-        if type(v) is str:
-            v = "'" + v + "'"
-        values_as_string[k] = str(v)
-
-    return [types, values_as_string]
+    # for k,v in values.items():
+    #     if type(v) is str:
+    #         v = "'" + v + "'"
+    #     values_as_string[k] = str(v)
+    # return [types, values_as_string]
+    return [types, values]
 
 # ---------------------------------------------------------------------
 def query_create_schema_table(schema_table_name = "schema_table"):

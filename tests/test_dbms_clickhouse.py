@@ -153,5 +153,28 @@ def test_return_values_as_string_for_clickhouse_query():
   res = dbms_clickhouse.json2lcickhouse(src)
   assert expected == res[1]
 
+# ---------------------------------------------------------------------
+def test_return_query_create_schema_table():
+  expected = "CREATE TABLE IF NOT EXISTS schema_table (__create_at DateTime DEFAULT now(), source_id String, schema String, table_name String) ENGINE = MergeTree PARTITION BY source_id ORDER BY (source_id, schema)"
+  actual   = dbms_clickhouse.query_create_schema_table(schema_table_name = "schema_table")
+  assert expected == actual
+
+def test_return_query_get_schema_table_all():
+  expected = "SELECT schema, table_name, source_id FROM __schema ORDER BY table_name"
+  actual   = dbms_clickhouse.query_get_schema_table("__schema")
+  assert expected == actual
+
+def test_return_query_get_schema_table_by_source_id():
+  expected = "SELECT schema, table_name FROM __schema where source_id = 'sample_source' ORDER BY table_name"
+  actual   = dbms_clickhouse.query_get_schema_table_by_source_id("sample_source", "__schema")
+  assert expected == actual
+
+def test_return_query_create_data_table():
+  expected = dbms_clickhouse.query_create_data_table({"sample_f": "Float64", "sample_b": "UInt8"}, "sample_data_table_001")
+  actual   = "CREATE TABLE IF NOT EXISTS sample_data_table_001 (__uid Int64, __create_at DateTime DEFAULT now(), __collected_at DateTime, \"sample_f\" Float64, \"sample_b\" UInt8) ENGINE = MergeTree PARTITION BY toYYYYMM(__create_at) ORDER BY (__uid)"
+  assert expected == actual
+
+
+
 if __name__ == '__main__':
     pytest.main(['-v', __file__])

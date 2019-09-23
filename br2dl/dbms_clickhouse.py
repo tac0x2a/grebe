@@ -1,5 +1,5 @@
 
-from br2dl import time_parser
+from . import time_parser
 
 import json
 import datetime
@@ -93,10 +93,32 @@ def json2lcickhouse(src_json_str, logger = None):
     # convert as string for clickhouse query.
     values_as_string = {}
     for k,v in values.items():
-        print(v)
-        print(type(v))
         if type(v) is str:
             v = "'" + v + "'"
         values_as_string[k] = str(v)
 
     return [types, values_as_string]
+
+# ---------------------------------------------------------------------
+def query_create_schema_table(schema_table_name = "schema_table"):
+    return "CREATE TABLE IF NOT EXISTS {} (__create_at DateTime DEFAULT now(), source_id String, schema String, table_name String) ENGINE = MergeTree PARTITION BY source_id ORDER BY (source_id, schema)".format(
+        schema_table_name
+    )
+
+def query_get_schema_table(schema_table_name = "schema_table"):
+    return "SELECT schema, table_name, source_id FROM {} ORDER BY table_name".format(
+        schema_table_name
+    )
+
+def query_get_schema_table_by_source_id(source_id, schema_table_name = "schema_table"):
+    return "SELECT schema, table_name FROM {} where source_id = '{}' ORDER BY table_name".format(
+        schema_table_name,
+        source_id
+    )
+
+def query_create_data_table(column_types_map, data_table_name):
+    columns_def_string = ", ".join([ "\"{}\" {}".format(c,t) for c,t in column_types_map.items() ])
+    return "CREATE TABLE IF NOT EXISTS {} (__uid Int64, __create_at DateTime DEFAULT now(), __collected_at DateTime, {}) ENGINE = MergeTree PARTITION BY toYYYYMM(__create_at) ORDER BY (__uid)".format(
+        data_table_name,
+        columns_def_string
+    )

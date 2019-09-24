@@ -13,7 +13,15 @@ def serialize_schema(types, source_id):
     serialized = str(sorted([[k,v] for k,v in types.items()]))
     return source_id + "_" + serialized
 
-def get_schemas(client):
+def generate_new_table_name(source_id, schema_cache):
+    tables = [ t for t in schema_cache.values() if t.startswith(source_id) ]
+    least_table = sorted(tables)[-1]
+    next_number = int(least_table[-3:]) + 1
+    next_number_idx = str(next_number).zfill(3)
+    return source_id + "_" + next_number_idx
+
+
+def select_all_schemas(client):
     query = dbms_clickhouse.query_get_schema_table_all()
     tables = client.execute(query) # [(serialized_schema, table_name, source_id),]
     return { s:n for (s,n,i) in tables }
@@ -27,27 +35,19 @@ def insert_schema(client, source_id, data_table_name, serialized_schema):
     client.execute(query, [{"source_id": source_id, "schema": serialized_schema, "table_name": data_table_name}])
 
 
-def get_new_table_name(source_id, schema_cache):
-    tables = [ t for t in schema_cache.values() if t.startswith(source_id) ]
-    least_table = sorted(tables)[-1]
-    next_number = int(least_table[-3:]) + 1
-    next_number_idx = str(next_number).zfill(3)
-    return source_id + "_" + next_number_idx
-
 def get_table_name_with_insert_if_new_schema(client, source_id, serialized, schema_cache):
-
     if serialized in schema_cache.keys():
         return schema_cache[serialized]
 
     # new format data received.
-    new_schemas = get_schemas(client)
+    new_schemas = select_all_schemas(client)
     schema_cache.update(new_schemas)
 
     if serialized in schema_cache.keys():
         return schema_cache[serialized]
 
     # it is true new schema !!
-    new_table_name = get_new_table_name(source_id, schema_cache)
+    new_table_name = generate_new_table_name(source_id, schema_cache)
     insert_schema(client, source_id, new_table_name, serialized)
 
     return new_table_name
@@ -65,13 +65,14 @@ print(serialized)
 client = Client('192.168.11.200', 19000)
 create_schema_table(client) # init
 
-schema_cache = get_schemas(client) # {serialize_schema : table_name}
+schema_cache = select_all_schemas(client) # {serialize_schema : table_name}
 
 new_table_name = get_table_name_with_insert_if_new_schema(client, source_id, serialized, schema_cache)
 print(new_table_name)
 
 # insert_schema(client, source_id, source_id + "_" + "042", serialized)
-print(get_schemas(client))
+# print(select_all_schemas(client))
+
 
 # client = Client('192.168.11.200', 19000)
 # print(client.execute('SHOW TABLES'))

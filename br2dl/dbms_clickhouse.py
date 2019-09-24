@@ -122,3 +122,7 @@ def query_create_data_table(column_types_map, data_table_name):
         data_table_name,
         columns_def_string
     )
+
+def query_insert_data_table_without_value(column_names, data_table_name):
+    columns_str = ", ".join([ '"'+c+'"' for c in column_names])
+    return "INSERT INTO {} ({}) VALUES".format(data_table_name, columns_str)

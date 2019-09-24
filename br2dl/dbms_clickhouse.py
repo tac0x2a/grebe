@@ -101,27 +101,20 @@ def json2lcickhouse(src_json_str, logger = None):
 
 # ---------------------------------------------------------------------
 def query_create_schema_table(schema_table_name = "schema_table"):
-    return "CREATE TABLE IF NOT EXISTS {} (__create_at DateTime DEFAULT now(), source_id String, schema String, table_name String) ENGINE = MergeTree PARTITION BY source_id ORDER BY (source_id, schema)".format(
-        schema_table_name
-    )
+    return "CREATE TABLE IF NOT EXISTS {} (__create_at DateTime DEFAULT now(), source_id String, schema String, table_name String) ENGINE = MergeTree PARTITION BY source_id ORDER BY (source_id, schema)".format(schema_table_name)
 
 def query_get_schema_table_all(schema_table_name = "schema_table"):
-    return "SELECT schema, table_name, source_id FROM {} ORDER BY table_name".format(
-        schema_table_name
-    )
+    return "SELECT schema, table_name, source_id FROM {} ORDER BY table_name".format(schema_table_name)
 
 def query_get_schema_table_by_source_id(source_id, schema_table_name = "schema_table"):
-    return "SELECT schema, table_name FROM {} where source_id = '{}' ORDER BY table_name".format(
-        schema_table_name,
-        source_id
-    )
+    return "SELECT schema, table_name FROM {} where source_id = '{}' ORDER BY table_name".format(schema_table_name, source_id)
+
+def query_insert_schema_table_without_value(schema_table_name = "schema_table"):
+    return "INSERT INTO {} (source_id, schema, table_name) VALUES".format(schema_table_name)
 
 def query_create_data_table(column_types_map, data_table_name):
     columns_def_string = ", ".join([ "\"{}\" {}".format(c,t) for c,t in column_types_map.items() ])
-    return "CREATE TABLE IF NOT EXISTS {} ({}, __create_at DateTime DEFAULT now(), __collected_at DateTime, __uid UUID DEFAULT generateUUIDv4()) ENGINE = MergeTree PARTITION BY toYYYYMM(__create_at) ORDER BY (__create_at)".format(
-        data_table_name,
-        columns_def_string
-    )
+    return "CREATE TABLE IF NOT EXISTS {} ({}, __create_at DateTime DEFAULT now(), __collected_at DateTime, __uid UUID DEFAULT generateUUIDv4()) ENGINE = MergeTree PARTITION BY toYYYYMM(__create_at) ORDER BY (__create_at)".format(data_table_name, columns_def_string)
 
 def query_insert_data_table_without_value(column_names, data_table_name):
     columns_str = ", ".join([ '"'+c+'"' for c in column_names])

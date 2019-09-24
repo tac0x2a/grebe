@@ -106,9 +106,6 @@ def query_create_schema_table(schema_table_name = "schema_table"):
 def query_get_schema_table_all(schema_table_name = "schema_table"):
     return "SELECT schema, table_name, source_id FROM {} ORDER BY table_name".format(schema_table_name)
 
-def query_get_schema_table_by_source_id(source_id, schema_table_name = "schema_table"):
-    return "SELECT schema, table_name FROM {} where source_id = '{}' ORDER BY table_name".format(schema_table_name, source_id)
-
 def query_insert_schema_table_without_value(schema_table_name = "schema_table"):
     return "INSERT INTO {} (source_id, schema, table_name) VALUES".format(schema_table_name)
 

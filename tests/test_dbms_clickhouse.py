@@ -169,16 +169,12 @@ def test_return_query_get_schema_table_all():
   actual   = dbms_clickhouse.query_get_schema_table_all("__schema")
   assert expected == actual
 
-def test_return_query_get_schema_table_by_source_id():
-  expected = "SELECT schema, table_name FROM __schema where source_id = 'sample_source' ORDER BY table_name"
-  actual   = dbms_clickhouse.query_get_schema_table_by_source_id("sample_source", "__schema")
-  assert expected == actual
-
-def test_return_query_insert_schema_table_without_value(schema_table_name = "schema_table"):
+def test_return_query_insert_schema_table_without_value():
   expected = "INSERT INTO __schema (source_id, schema, table_name) VALUES"
   actual   = dbms_clickhouse.query_insert_schema_table_without_value("__schema")
   assert expected == actual
 
+# -----
 def test_return_query_create_data_table():
   expected = dbms_clickhouse.query_create_data_table({"sample_f": "Float64", "sample_b": "UInt8"}, "sample_data_table_001")
   actual   = "CREATE TABLE IF NOT EXISTS sample_data_table_001 (\"sample_f\" Float64, \"sample_b\" UInt8, __create_at DateTime DEFAULT now(), __collected_at DateTime, __uid UUID DEFAULT generateUUIDv4()) ENGINE = MergeTree PARTITION BY toYYYYMM(__create_at) ORDER BY (__create_at)"

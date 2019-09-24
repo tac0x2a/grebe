@@ -114,6 +114,8 @@ def callback(channel, method, properties, body):
 
     insert_data(client, data_table_name, values)
 
+    channel.basic_ack(delivery_tag = method.delivery_tag)
+
 # initialize rabbitmq
 connection = pika.BlockingConnection(pika.ConnectionParameters(host=rabbitmq_host))
 channel = connection.channel()

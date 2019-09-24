@@ -166,7 +166,7 @@ def test_return_query_create_schema_table():
 
 def test_return_query_get_schema_table_all():
   expected = "SELECT schema, table_name, source_id FROM __schema ORDER BY table_name"
-  actual   = dbms_clickhouse.query_get_schema_table("__schema")
+  actual   = dbms_clickhouse.query_get_schema_table_all("__schema")
   assert expected == actual
 
 def test_return_query_get_schema_table_by_source_id():

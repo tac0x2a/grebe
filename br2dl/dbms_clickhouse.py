@@ -105,7 +105,7 @@ def query_create_schema_table(schema_table_name = "schema_table"):
         schema_table_name
     )
 
-def query_get_schema_table(schema_table_name = "schema_table"):
+def query_get_schema_table_all(schema_table_name = "schema_table"):
     return "SELECT schema, table_name, source_id FROM {} ORDER BY table_name".format(
         schema_table_name
     )

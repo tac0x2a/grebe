@@ -1,5 +1,16 @@
 # Grebe
 
+```
+   　 　 ＿
+　　 _,ノ;:｡-:ヽ
+　　 ￣｀ヽ　.l|
+　　　 　 ﾉ_ノl _,,.,.,..,..,.,..,.,.,,_
+　　　　/;;;:ノ:´;'::;'::;'::;'::;'::;'::;'｀＞:"7
+  　 ＿l　 "ｰ''""´´""""""´ﾞヾ:/
+　　 、 ｀ﾞ''''ーｰ～ｰ--―ー―''"￣￣
+　　　　￣　 ―　　＿　　 二　　 ー
+```
+
 Grebe is forwarder JSON message from RabbitMQ to Clickhouse.
 
 1. Receive JSON message from RabbitMQ specified queue on RabbitMQ.

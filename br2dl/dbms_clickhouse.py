@@ -4,6 +4,9 @@ import json
 import datetime
 from dateutil.tz import tzutc
 
+import logging
+logger = logging.getLogger("dbms_clickhouse")
+
 def json2clickhouse_sub_list(key, list, types, values):
     items = []
     items_ns = []
@@ -153,7 +156,6 @@ def create_data_table(types, new_table_name):
     query = query_create_data_table(types, new_table_name)
     client.execute(query)
 
-
 def get_table_name_with_insert_if_new_schema(client, source_id, types, serialized, schema_cache):
     if serialized in schema_cache.keys():
         return schema_cache[serialized]
@@ -169,7 +171,7 @@ def get_table_name_with_insert_if_new_schema(client, source_id, types, serialize
     new_table_name = generate_new_table_name(source_id, schema_cache)
     insert_schema(client, source_id, new_table_name, serialized)
     create_data_table(types, new_table_name)
-    print("created new table {}".format(new_table_name))
+    logger.info("Create new schema '{}' as '{}'".format(serialized, new_table_name))
 
     return new_table_name
 

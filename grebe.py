@@ -22,6 +22,8 @@ parser.add_argument('-dh', help='Clickhouse host', default='localhost') # Option
 parser.add_argument('-dp', help='Clickhouse port by native connection', default= 9000) # Optional
 parser.add_argument('--log-level', help='Log level', choices=['DEBUG', 'INFO', 'WARN', 'ERROR'], default='INFO') # Optional
 parser.add_argument('--log-format', help='Log format by \'logging\' package', default='[%(levelname)s] %(asctime)s | %(pathname)s(L%(lineno)s) | %(message)s') # Optional
+parser.add_argument('--log-file',    help='Log file directory') # Optional
+parser.add_argument('--log-console', help='Enable console logs', action='store_true') # Optional
 
 args = parser.parse_args()
 
@@ -31,7 +33,10 @@ MQ_POST  = args.mp # os.environ.get('MQ_POST') or 5672
 DB_HOST = args.dh # os.environ.get('DB_HOST') or 'localhost'
 DB_PORT = args.dp # os.environ.get('DB_PORT') or 9000
 
-logging.basicConfig(level=args.log_level, format=args.log_format)
+logging.basicConfig(level=args.log_level, format=args.log_format, filename=args.log_file, backupCount=1)
+if args.log_console: # Console output is always enable.
+    logging.getLogger().addHandler(logging.StreamHandler())
+
 logger = logging.getLogger("Grebe")
 logger.info(args)
 

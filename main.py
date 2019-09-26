@@ -3,17 +3,26 @@ from datetime import datetime,timezone,timedelta
 
 import pika
 from clickhouse_driver import Client
+
 from br2dl import dbms_clickhouse as dbms
 
-MQ_HOST  = os.environ.get('MQ_HOST') or 'localhost'
-MQ_port  = os.environ.get('MQ_PORT') or 5672
-MQ_queue = os.environ.get('MQ_QUEUE')
+# Argument Parsing
+import argparse
+parser = argparse.ArgumentParser(description='Forward JSON message from RabbitMQ to Clickhouse')
+parser.add_argument('queue_name', help='Queue name to subscribe on RabbitMQ') # Required
+parser.add_argument('-mh', help='RabbitMQ host', default='localhost') # Optional
+parser.add_argument('-mp', help='RabbitMQ port', default=5672) # Optional
+parser.add_argument('-dh', help='Clickhouse host', default='localhost') # Optional
+parser.add_argument('-dp', help='Clickhouse port by native connection', default= 9000) # Optional
+args = parser.parse_args()
 
-db_host = os.environ.get('DB_HOST') or 'localhost'
-db_port = os.environ.get('DB_PORT') or 9000
+MQ_QNAME = args.queue_name # os.environ.get('MQ_QNAME')
+MQ_HOST  = args.mh # os.environ.get('MQ_HOST') or 'localhost'
+MQ_POST  = args.mp # os.environ.get('MQ_POST') or 5672
+DB_HOST = args.dh # os.environ.get('DB_HOST') or 'localhost'
+DB_PORT = args.dp # os.environ.get('DB_PORT') or 9000
 
-print(MQ_HOST)
-print(MQ_port)
+print(args)
 
 def callback(channel, method, properties, body):
 
@@ -36,14 +45,14 @@ def callback(channel, method, properties, body):
 
 
 # initialize rabbitmq
-connection = pika.BlockingConnection(pika.ConnectionParameters(host=MQ_HOST, port=MQ_port))
+connection = pika.BlockingConnection(pika.ConnectionParameters(host=MQ_HOST, port=MQ_POST))
 channel = connection.channel()
 
-channel.queue_declare(queue=MQ_queue)
-channel.basic_consume(MQ_queue, callback)
+channel.queue_declare(queue=MQ_QNAME)
+channel.basic_consume(MQ_QNAME, callback)
 
 # initialize clickhouse
-client = Client(db_host, db_port)
+client = Client(DB_HOST, DB_PORT)
 dbms.create_schema_table(client) # init
 schema_cache = dbms.select_all_schemas(client)
 

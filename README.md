@@ -8,9 +8,15 @@ Grebe is forwarder JSON message from RabbitMQ to Clickhouse.
 ## Usage
 
 ```sh
+$ pip install -r requirements.txt
 $ chmod +x grebe.py
 
-$ ./grebe.py devic -mh 192.168.11.200 -dh 192.168.11.200 -dp 19000
+$ ./grebe.py biwako -mh 192.168.11.200 -dh 192.168.11.200 -dp 19000
+```
+
+## Test
+```sh
+$
 ```
 
 ## Help

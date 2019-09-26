@@ -1,4 +1,5 @@
 # Grebe
+[![Build Status](https://travis-ci.org/tac0x2a/grebe.svg?branch=master)](https://travis-ci.org/tac0x2a/grebe)
 
 ```
    　 　 ＿

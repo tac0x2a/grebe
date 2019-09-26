@@ -24,19 +24,33 @@ $
 ```sh
 $ ./grebe.py -h
 
-usage: grebe.py [-h] [-mh MH] [-mp MP] [-dh DH] [-dp DP] queue_name
+usage: grebe.py [-h] [-mh MH] [-mp MP] [-dh DH] [-dp DP]
+                [--log-level {DEBUG,INFO,WARN,ERROR}]
+                [--log-format LOG_FORMAT] [--log-file LOG_FILE]
+                [--log-file-count LOG_FILE_COUNT]
+                [--log-file-size LOG_FILE_SIZE]
+                queue_name
 
 Forward JSON message from RabbitMQ to Clickhouse
 
 positional arguments:
-  queue_name  Queue name to subscribe on RabbitMQ
+  queue_name            Queue name to subscribe on RabbitMQ
 
 optional arguments:
-  -h, --help  show this help message and exit
-  -mh MH      RabbitMQ host
-  -mp MP      RabbitMQ port
-  -dh DH      Clickhouse host
-  -dp DP      Clickhouse port by native connection
+  -h, --help            show this help message and exit
+  -mh MH                RabbitMQ host
+  -mp MP                RabbitMQ port
+  -dh DH                Clickhouse host
+  -dp DP                Clickhouse port by native connection
+  --log-level {DEBUG,INFO,WARN,ERROR}
+                        Log level
+  --log-format LOG_FORMAT
+                        Log format by 'logging' package
+  --log-file LOG_FILE   Log file directory
+  --log-file-count LOG_FILE_COUNT
+                        Log file keep count
+  --log-file-size LOG_FILE_SIZE
+                        Size of each log file
 ```
 
 ## Contributing

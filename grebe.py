@@ -10,20 +10,23 @@ from br2dl import dbms_clickhouse as dbms
 
 # Logger
 import logging
-
+import logging.handlers
 
 # Argument Parsing
 import argparse
 parser = argparse.ArgumentParser(description='Forward JSON message from RabbitMQ to Clickhouse')
 parser.add_argument('queue_name', help='Queue name to subscribe on RabbitMQ') # Required
-parser.add_argument('-mh', help='RabbitMQ host', default='localhost') # Optional
-parser.add_argument('-mp', help='RabbitMQ port', default=5672) # Optional
-parser.add_argument('-dh', help='Clickhouse host', default='localhost') # Optional
-parser.add_argument('-dp', help='Clickhouse port by native connection', default= 9000) # Optional
-parser.add_argument('--log-level', help='Log level', choices=['DEBUG', 'INFO', 'WARN', 'ERROR'], default='INFO') # Optional
+parser.add_argument('-mh', help='RabbitMQ host', default='localhost')
+parser.add_argument('-mp', help='RabbitMQ port', type=int, default=5672)
+parser.add_argument('-dh', help='Clickhouse host', default='localhost')
+parser.add_argument('-dp', help='Clickhouse port by native connection', type=int, default= 9000)
+
+parser.add_argument('--log-level', help='Log level', choices=['DEBUG', 'INFO', 'WARN', 'ERROR'], default='INFO')
 parser.add_argument('--log-format', help='Log format by \'logging\' package', default='[%(levelname)s] %(asctime)s | %(pathname)s(L%(lineno)s) | %(message)s') # Optional
-parser.add_argument('--log-file',    help='Log file directory') # Optional
-parser.add_argument('--log-console', help='Enable console logs', action='store_true') # Optional
+
+parser.add_argument('--log-file', help='Log file directory')
+parser.add_argument('--log-file-count', help='Log file keep count',  type=int, default=1000)
+parser.add_argument('--log-file-size', help='Size of each log file',  type=int, default=1000000) #default 1MB
 
 args = parser.parse_args()
 
@@ -33,9 +36,13 @@ MQ_POST  = args.mp # os.environ.get('MQ_POST') or 5672
 DB_HOST = args.dh # os.environ.get('DB_HOST') or 'localhost'
 DB_PORT = args.dp # os.environ.get('DB_PORT') or 9000
 
-logging.basicConfig(level=args.log_level, format=args.log_format, filename=args.log_file, backupCount=1)
-if args.log_console: # Console output is always enable.
-    logging.getLogger().addHandler(logging.StreamHandler())
+logging.basicConfig(level=args.log_level, format=args.log_format)
+
+if args.log_file:
+    fh = logging.handlers.RotatingFileHandler(args.log_file, maxBytes=args.log_file_size, backupCount=args.log_file_count)
+    fh.setFormatter(logging.Formatter(args.log_format))
+    fh.setLevel(args.log_level)
+    logging.getLogger().addHandler(fh)
 
 logger = logging.getLogger("Grebe")
 logger.info(args)
@@ -57,6 +64,7 @@ def callback(channel, method, properties, body):
 
     except Exception as e:
         logger.error(e, exc_info=e)
+        logger.error("Message = [{}, {}]".format(topic, body))
 
     finally:
         channel.basic_ack(delivery_tag = method.delivery_tag)

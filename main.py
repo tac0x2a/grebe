@@ -3,17 +3,16 @@ from datetime import datetime,timezone,timedelta
 
 import pika
 from clickhouse_driver import Client
-
 from br2dl import dbms_clickhouse as dbms
 
-
-MQ_host = os.environ.get('MQ_HOST') or 'localhost'
-MQ_port = os.environ.get('MQ_PORT') or 5672
+MQ_HOST  = os.environ.get('MQ_HOST') or 'localhost'
+MQ_port  = os.environ.get('MQ_PORT') or 5672
 MQ_queue = os.environ.get('MQ_QUEUE')
+
 db_host = os.environ.get('DB_HOST') or 'localhost'
 db_port = os.environ.get('DB_PORT') or 9000
 
-print(MQ_host)
+print(MQ_HOST)
 print(MQ_port)
 
 def callback(channel, method, properties, body):
@@ -37,7 +36,7 @@ def callback(channel, method, properties, body):
 
 
 # initialize rabbitmq
-connection = pika.BlockingConnection(pika.ConnectionParameters(host=MQ_host, port=MQ_port))
+connection = pika.BlockingConnection(pika.ConnectionParameters(host=MQ_HOST, port=MQ_port))
 channel = connection.channel()
 
 channel.queue_declare(queue=MQ_queue)

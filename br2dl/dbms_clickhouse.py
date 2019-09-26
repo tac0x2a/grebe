@@ -94,11 +94,7 @@ def json2lcickhouse(src_json_str, logger = None):
 
     # convert as string for clickhouse query.
     values_as_string = {}
-    # for k,v in values.items():
-    #     if type(v) is str:
-    #         v = "'" + v + "'"
-    #     values_as_string[k] = str(v)
-    # return [types, values_as_string]
+
     return [types, values]
 
 # ---------------------------------------------------------------------

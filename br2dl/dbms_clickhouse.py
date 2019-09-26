@@ -1,4 +1,3 @@
-
 from . import time_parser
 
 import json
@@ -116,3 +115,64 @@ def query_create_data_table(column_types_map, data_table_name):
 def query_insert_data_table_without_value(column_names, data_table_name):
     columns_str = ", ".join([ '"'+c+'"' for c in column_names])
     return "INSERT INTO {} ({}) VALUES".format(data_table_name, columns_str)
+
+
+# ---------------------------------------------------------------------
+def serialize_schema(types, source_id):
+    """
+    serialize schema to string
+    """
+    serialized = str(sorted([[k,v] for k,v in types.items()]))
+    return source_id + "_" + serialized
+
+def generate_new_table_name(source_id, schema_cache):
+    tables = [ t for t in schema_cache.values() if t.startswith(source_id) ]
+    next_idx = 1
+    if len(tables) > 0:
+        least_table = sorted(tables)[-1]
+        next_idx = int(least_table[-3:]) + 1
+
+    next_number_idx = str(next_idx).zfill(3)
+    return source_id + "_" + next_number_idx
+
+
+def select_all_schemas(client):
+    query = query_get_schema_table_all()
+    tables = client.execute(query) # [(serialized_schema, table_name, source_id),]
+    return { s:n for (s,n,i) in tables }
+
+def create_schema_table(client):
+    query = query_create_schema_table()
+    client.execute(query)
+
+def insert_schema(client, source_id, data_table_name, serialized_schema):
+    query = query_insert_schema_table_without_value()
+    client.execute(query, [{"source_id": source_id, "schema": serialized_schema, "table_name": data_table_name}])
+
+def create_data_table(types, new_table_name):
+    query = query_create_data_table(types, new_table_name)
+    client.execute(query)
+
+
+def get_table_name_with_insert_if_new_schema(client, source_id, types, serialized, schema_cache):
+    if serialized in schema_cache.keys():
+        return schema_cache[serialized]
+
+    # new format data received.
+    new_schemas = select_all_schemas(client)
+    schema_cache.update(new_schemas)
+
+    if serialized in schema_cache.keys():
+        return schema_cache[serialized]
+
+    # it is true new schema !!
+    new_table_name = generate_new_table_name(source_id, schema_cache)
+    insert_schema(client, source_id, new_table_name, serialized)
+    create_data_table(types, new_table_name)
+    print("created new table {}".format(new_table_name))
+
+    return new_table_name
+
+def insert_data(client, data_table_name, values):
+    query = query_insert_data_table_without_value(values.keys(), data_table_name)
+    client.execute(query, [values])

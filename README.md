@@ -27,7 +27,7 @@ $ ./grebe.py biwako -mh 192.168.11.200 -dh 192.168.11.200 -dp 19000
 
 ## Test
 ```sh
-$
+$ pytest
 ```
 
 ## Help

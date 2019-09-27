@@ -52,7 +52,7 @@ ENTRYPOINT python ./grebe.py ${MQ_QNAME} \
                          -mh ${MQ_HOST} -mp ${MQ_PORT} \
                          -dh ${DB_HOST} -dp ${DB_PORT} \
                          --log-level ${LOG_LEVEL} \
-                         --log-file /logs/`cat /etc/hostname`-${LOG_FILE} \
+                         --log-file /logs/`cat /etc/hostname`/${LOG_FILE} \
                          --log-format "${LOG_FORMAT}" \
                          --log-file-count ${LOG_FILE_COUNT}\
                          --log-file-size ${LOG_FILE_SIZE}

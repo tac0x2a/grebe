@@ -39,6 +39,11 @@ DB_PORT = args.dp # os.environ.get('DB_PORT') or 9000
 logging.basicConfig(level=args.log_level, format=args.log_format)
 
 if args.log_file:
+    import os
+    dir = os.path.dirname(args.log_file)
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+
     fh = logging.handlers.RotatingFileHandler(args.log_file, maxBytes=args.log_file_size, backupCount=args.log_file_count)
     fh.setFormatter(logging.Formatter(args.log_format))
     fh.setLevel(args.log_level)

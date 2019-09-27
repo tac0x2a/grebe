@@ -148,7 +148,7 @@ def insert_schema(client, source_id, data_table_name, serialized_schema):
     query = query_insert_schema_table_without_value()
     client.execute(query, [{"source_id": source_id, "schema": serialized_schema, "table_name": data_table_name}])
 
-def create_data_table(types, new_table_name):
+def create_data_table(client, types, new_table_name):
     query = query_create_data_table(types, new_table_name)
     client.execute(query)
 
@@ -166,7 +166,7 @@ def get_table_name_with_insert_if_new_schema(client, source_id, types, serialize
     # it is true new schema !!
     new_table_name = generate_new_table_name(source_id, schema_cache)
     insert_schema(client, source_id, new_table_name, serialized)
-    create_data_table(types, new_table_name)
+    create_data_table(client, types, new_table_name)
     logger.info("Create new schema '{}' as '{}'".format(serialized, new_table_name))
 
     return new_table_name

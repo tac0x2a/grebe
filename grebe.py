@@ -69,7 +69,10 @@ def callback(channel, method, properties, body):
 
     except Exception as e:
         logger.error(e, exc_info=e)
-        logger.error("Message = [{}, {}]".format(topic, body))
+        # Fixme: If maximum retry count exceeded, need to dump message to localfile, or some secure storage.
+        logger.error("Forward failed. Re-sending [exchange={}, routing_key={}, body={}]".format(args.queue_name, topic, body))
+        channel.basic_publish(exchange=args.queue_name, routing_key=topic, body=body)
+        logger.error("Re-send complete.")
 
     finally:
         channel.basic_ack(delivery_tag = method.delivery_tag)

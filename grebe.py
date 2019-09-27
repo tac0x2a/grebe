@@ -24,7 +24,7 @@ parser.add_argument('-dp', help='Clickhouse port by native connection', type=int
 parser.add_argument('--log-level', help='Log level', choices=['DEBUG', 'INFO', 'WARN', 'ERROR'], default='INFO')
 parser.add_argument('--log-format', help='Log format by \'logging\' package', default='[%(levelname)s] %(asctime)s | %(pathname)s(L%(lineno)s) | %(message)s') # Optional
 
-parser.add_argument('--log-file', help='Log file directory')
+parser.add_argument('--log-file', help='Log file path')
 parser.add_argument('--log-file-count', help='Log file keep count',  type=int, default=1000)
 parser.add_argument('--log-file-size', help='Size of each log file',  type=int, default=1000000) #default 1MB
 

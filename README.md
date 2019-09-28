@@ -41,10 +41,10 @@ usage: grebe.py [-h] [-mh MH] [-mp MP] [-dh DH] [-dp DP]
                 [--log-format LOG_FORMAT] [--log-file LOG_FILE]
                 [--log-file-count LOG_FILE_COUNT]
                 [--log-file-size LOG_FILE_SIZE]
+                [--retry-max-count RETRY_MAX_COUNT]
                 queue_name
 
 Forward JSON message from RabbitMQ to Clickhouse
-
 positional arguments:
   queue_name            Queue name to subscribe on RabbitMQ
 
@@ -58,11 +58,13 @@ optional arguments:
                         Log level
   --log-format LOG_FORMAT
                         Log format by 'logging' package
-  --log-file LOG_FILE   Log file directory
+  --log-file LOG_FILE   Log file path
   --log-file-count LOG_FILE_COUNT
                         Log file keep count
   --log-file-size LOG_FILE_SIZE
                         Size of each log file
+  --retry-max-count RETRY_MAX_COUNT
+                        Max count of retry to processing. Message is discard
 ```
 
 ## Contributing

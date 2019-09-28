@@ -21,7 +21,7 @@ parser.add_argument('--log-file', help='Log file path')
 parser.add_argument('--log-file-count', help='Log file keep count',  type=int, default=1000)
 parser.add_argument('--log-file-size', help='Size of each log file',  type=int, default=1000000) #default 1MB
 
-parser.add_argument('--retry-max-count', help='Max count of retry to insert. Message is discard when exceeded max count.', type=int, default=3)
+parser.add_argument('--retry-max-count', help='Max count of retry to processing. Message is discard when exceeded max count.', type=int, default=3)
 
 args = parser.parse_args()
 

@@ -13,6 +13,7 @@ services:
       # - LOG_LEVEL=INFO # Log level [DEBUG, INFO, WARN, ERROR]
       # - LOG_FORMAT='[%(levelname)s] %(asctime)s | %(pathname)s(L%(lineno)s) | %(message)s'  #  Log format by 'logging' package
       # - LOG_FILE=logfile # Log file name
+      # - RETRY_MAX_COUNT=3 # Max count of retry to processing.
     volumes:
       - ./volume:/logs
 

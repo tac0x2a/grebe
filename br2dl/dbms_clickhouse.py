@@ -152,21 +152,30 @@ def create_data_table(client, types, new_table_name):
     query = query_create_data_table(types, new_table_name)
     client.execute(query)
 
-def get_table_name_with_insert_if_new_schema(client, source_id, types, serialized, schema_cache):
+def get_table_name_with_insert_if_new_schema(client, source_id, types, serialized, schema_cache, max_sleep_sec=60):
     if serialized in schema_cache.keys():
         return schema_cache[serialized]
+
+    # if multi grebe working, need to weak-consistency.
+    import random
+    from time import sleep
+    sleep_sec = random.randint(0, max_sleep_sec)
+    logger.info("Detected new schema '{}'. Random waiting {} sec ...".format(source_id, sleep_sec))
+    sleep(sleep_sec)
 
     # new format data received.
     new_schemas = select_all_schemas(client)
     schema_cache.update(new_schemas)
 
     if serialized in schema_cache.keys():
+        logger.info("Schema is already created as '{}'. Keep going!".format(schema_cache[serialized]))
         return schema_cache[serialized]
 
     # it is true new schema !!
     new_table_name = generate_new_table_name(source_id, schema_cache)
     insert_schema(client, source_id, new_table_name, serialized)
     create_data_table(client, types, new_table_name)
+    schema_cache[serialized] = new_table_name
     logger.info("Create new schema '{}' as '{}'".format(serialized, new_table_name))
 
     return new_table_name

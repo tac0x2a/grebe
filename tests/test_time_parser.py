@@ -83,5 +83,9 @@ def test_return_Time_value_if_string_is_Time_like_format_without_zero_padding():
                     datetime(2018, 11, 14, 9, 6, 0, 0 * 1000, timezone(timedelta(hours=0))), 0
                     )
 
+def test_return_original_string_is_simple_day_of_week():
+    assertNotValid("Sat")
+
+
 if __name__ == '__main__':
     pytest.main(['-v', __file__])

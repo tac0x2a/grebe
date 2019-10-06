@@ -6,10 +6,14 @@ from dateutil.tz import tzutc
 import re
 
 NanosecPattern = re.compile(r".+\.(\d+).*")
+RequiredTimePattern = re.compile(r".*\d\d?[/:-]\d\d?.*")
 
 def elastic_time_parse(src, logger = None):
     """Parse src string as datetime and nanosec part. Raise exception if src format is NOT valid. """
     nano = 0
+
+    if not re.match(RequiredTimePattern, src):
+        raise ValueError
 
     ret = parse(src)
     if ret.tzinfo == None:

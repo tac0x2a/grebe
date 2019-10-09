@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
 import os
+import pickle
 from datetime import datetime,timezone,timedelta
 
 from br2dl import dbms_clickhouse as dbms
+from br2dl.local_schema import LocalSchema
 
 # Argument Parsing
 import argparse
@@ -13,6 +15,8 @@ parser.add_argument('-mh', help='RabbitMQ host', default='localhost')
 parser.add_argument('-mp', help='RabbitMQ port', type=int, default=5672)
 parser.add_argument('-dh', help='Clickhouse host', default='localhost')
 parser.add_argument('-dp', help='Clickhouse port by native connection', type=int, default= 9000)
+
+parser.add_argument('--schema-dir', help='Local schema DB dir path', default="schemas")
 
 parser.add_argument('--log-level', help='Log level', choices=['DEBUG', 'INFO', 'WARN', 'ERROR'], default='INFO')
 parser.add_argument('--log-format', help='Log format by \'logging\' package', default='[%(levelname)s] %(asctime)s | %(pathname)s(L%(lineno)s) | %(message)s') # Optional
@@ -31,6 +35,7 @@ MQ_POST  = args.mp
 DB_HOST = args.dh
 DB_PORT = args.dp
 RETRY_MAX = args.retry_max_count
+SCHEMA_DIR = args.schema_dir
 
 
 # Logger initialize
@@ -40,7 +45,6 @@ import logging.handlers
 logging.basicConfig(level=args.log_level, format=args.log_format)
 
 if args.log_file:
-    import os
     dir = os.path.dirname(args.log_file)
     if not os.path.exists(dir):
         os.makedirs(dir)
@@ -53,6 +57,10 @@ if args.log_file:
 logger = logging.getLogger("Grebe")
 logger.info(args)
 
+# Schema
+schema_file = os.path.join(SCHEMA_DIR, "schema_db_" + DB_HOST + ".db")
+schema_proxy = LocalSchema(schema_file)
+logger.info("Create schema file: '{}'".format(schema_file))
 
 # Retry processing
 

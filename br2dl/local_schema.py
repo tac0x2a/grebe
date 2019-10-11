@@ -1,6 +1,6 @@
 import os
-
 import pickle
+
 
 class LocalSchema():
     def __init__(self, schema_file):
@@ -24,7 +24,3 @@ class LocalSchema():
     def store_all_schemas(self, schemas):
         with open(self.schema_file, 'wb') as db:
             pickle.dump(schemas, db)
-
-
-
-

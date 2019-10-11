@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 
+from clickhouse_driver import Client
+import pika
+import logging.handlers
+import logging
 import os
 import pickle
-from datetime import datetime,timezone,timedelta
+from datetime import datetime, timezone, timedelta
 
 from br2dl import dbms_clickhouse as dbms
 from br2dl.local_schema import LocalSchema
@@ -10,28 +14,28 @@ from br2dl.local_schema import LocalSchema
 # Argument Parsing
 import argparse
 parser = argparse.ArgumentParser(description='Forward JSON message from RabbitMQ to Clickhouse')
-parser.add_argument('queue_name', help='Queue name to subscribe on RabbitMQ') # Required
+parser.add_argument('queue_name', help='Queue name to subscribe on RabbitMQ')  # Required
 parser.add_argument('-mh', help='RabbitMQ host', default='localhost')
 parser.add_argument('-mp', help='RabbitMQ port', type=int, default=5672)
 parser.add_argument('-dh', help='Clickhouse host', default='localhost')
-parser.add_argument('-dp', help='Clickhouse port by native connection', type=int, default= 9000)
+parser.add_argument('-dp', help='Clickhouse port by native connection', type=int, default=9000)
 
 parser.add_argument('--schema-dir', help='Local schema DB dir path', default="schemas")
 
 parser.add_argument('--log-level', help='Log level', choices=['DEBUG', 'INFO', 'WARN', 'ERROR'], default='INFO')
-parser.add_argument('--log-format', help='Log format by \'logging\' package', default='[%(levelname)s] %(asctime)s | %(pathname)s(L%(lineno)s) | %(message)s') # Optional
+parser.add_argument('--log-format', help='Log format by \'logging\' package', default='[%(levelname)s] %(asctime)s | %(pathname)s(L%(lineno)s) | %(message)s')  # Optional
 
 parser.add_argument('--log-file', help='Log file path')
-parser.add_argument('--log-file-count', help='Log file keep count',  type=int, default=1000)
-parser.add_argument('--log-file-size', help='Size of each log file',  type=int, default=1000000) #default 1MB
+parser.add_argument('--log-file-count', help='Log file keep count', type=int, default=1000)
+parser.add_argument('--log-file-size', help='Size of each log file', type=int, default=1000000)  # default 1MB
 
 parser.add_argument('--retry-max-count', help='Max count of retry to processing. Message is discard when exceeded max count.', type=int, default=3)
 
 args = parser.parse_args()
 
 MQ_QNAME = args.queue_name
-MQ_HOST  = args.mh
-MQ_POST  = args.mp
+MQ_HOST = args.mh
+MQ_POST = args.mp
 DB_HOST = args.dh
 DB_PORT = args.dp
 RETRY_MAX = args.retry_max_count
@@ -39,8 +43,6 @@ SCHEMA_DIR = args.schema_dir
 
 
 # Logger initialize
-import logging
-import logging.handlers
 
 logging.basicConfig(level=args.log_level, format=args.log_format)
 
@@ -64,6 +66,7 @@ logger.info("Create schema file: '{}'".format(schema_file))
 
 # Retry processing
 
+
 def send_retry(channel, method, properties, body):
     RetryCountKey = "x-grebe-retry-count"
 
@@ -77,13 +80,13 @@ def send_retry(channel, method, properties, body):
         return
 
     props = pika.BasicProperties(
-        headers={RetryCountKey : current_retry_count + 1}
+        headers={RetryCountKey: current_retry_count + 1}
     )
     logger.debug("Re-sending [exchange={}, routing_key={}, props={}, body={}]".format(args.queue_name, method.routing_key, props, body))
     channel.basic_publish(exchange=args.queue_name, routing_key=method.routing_key, properties=props, body=body)
-    logger.warning("Re-send complete. ({})".format(current_retry_count+1))
+    logger.warning("Re-send complete. ({})".format(current_retry_count + 1))
 
-#
+
 def callback(channel, method, properties, body):
     logger.debug("receive '{}({})'".format(method.routing_key, method.delivery_tag))
     try:
@@ -106,28 +109,26 @@ def callback(channel, method, properties, body):
         send_retry(channel, method, properties, body)
 
     finally:
-        channel.basic_ack(delivery_tag = method.delivery_tag)
+        channel.basic_ack(delivery_tag=method.delivery_tag)
         logger.debug("return basic_ack '{}({})'".format(method.routing_key, method.delivery_tag))
 
 
 # initialize rabbitmq
-import pika
 connection = pika.BlockingConnection(pika.ConnectionParameters(host=MQ_HOST, port=MQ_POST))
 channel = connection.channel()
 
 channel.queue_declare(queue=MQ_QNAME)
 channel.basic_consume(MQ_QNAME, callback)
-logger.info("RabbitMQ connected({}:{})".format(MQ_HOST,MQ_POST))
+logger.info("RabbitMQ connected({}:{})".format(MQ_HOST, MQ_POST))
 
 # initialize clickhouse
-from clickhouse_driver import Client
 client = Client(DB_HOST, DB_PORT)
-logger.info("Clickhouse connected({}:{})".format(DB_HOST,DB_PORT))
+logger.info("Clickhouse connected({}:{})".format(DB_HOST, DB_PORT))
 
-dbms.create_schema_table(client) # init
+dbms.create_schema_table(client)  # init
 schema_cache = dbms.select_all_schemas(client)
 logger.info("Load {} schemas from DB".format(len(schema_cache)))
-logger.debug("Schemas: {}".format([ s for s in schema_cache.values()]) )
+logger.debug("Schemas: {}".format([s for s in schema_cache.values()]))
 
 # start cousuming
 logger.info("Consuming ...")

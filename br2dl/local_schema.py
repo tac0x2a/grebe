@@ -1,5 +1,5 @@
 import os
-import pickle
+import yaml
 
 
 class LocalSchema():
@@ -13,14 +13,14 @@ class LocalSchema():
 
         # Create local schema file
         if not os.path.exists(schema_file):
-            with open(schema_file, 'wb') as db:
-                pickle.dump({}, db)
+            with open(schema_file, 'w') as db:
+                yaml.dump({}, db)
 
     def load_all_schemas(self):
-        with open(self.schema_file, 'rb') as db:
-            local_schemas = pickle.load(db)
+        with open(self.schema_file, 'r') as db:
+            local_schemas = yaml.load(db)
         return local_schemas
 
     def store_all_schemas(self, schemas):
-        with open(self.schema_file, 'wb') as db:
-            pickle.dump(schemas, db)
+        with open(self.schema_file, 'w') as db:
+            yaml.dump(schemas, db)

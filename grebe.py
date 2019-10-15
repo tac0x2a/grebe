@@ -131,8 +131,8 @@ else:
     store = SchemaStoreYAML(schema_file)
 
 schema_cache = store.load_all_schemas()
-logger.info("Load {} schemas from DB".format(len(schema_cache)))
-logger.debug("Schemas: {}".format([s for s in schema_cache.values()]))
+logger.info(f"Load {len(schema_cache)} schemas from {SCHEMA_STORE}")
+logger.info(f"Schemas: {[s for s in schema_cache.values()]}")
 
 # start cousuming
 logger.info("Consuming ...")

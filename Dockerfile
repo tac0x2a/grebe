@@ -18,6 +18,7 @@ RUN apk add --no-cache --virtual .build-deps gcc musl-dev && \
 # Queue name to subscribe on RabbitMQ
 ENV MQ_QNAME ''
 
+
 # RabbitMQ host
 ENV MQ_HOST  ''
 
@@ -29,6 +30,12 @@ ENV DB_HOST  ''
 
 # Clickhouse port by native connection
 ENV DB_PORT  9000
+
+# Schema store location
+ENV SCHEMA_STORE local
+
+# Schema DB directory path when schema-sotre is local
+ENV LOCAL_SCHEMA_DIR schemas
 
 # Log level [DEBUG, INFO, WARN, ERROR]
 ENV LOG_LEVEL INFO
@@ -53,11 +60,13 @@ RUN mkdir /logs
 VOLUME /logs
 
 ENTRYPOINT python ./grebe.py ${MQ_QNAME} \
-                         -mh ${MQ_HOST} -mp ${MQ_PORT} \
-                         -dh ${DB_HOST} -dp ${DB_PORT} \
-                         --log-level ${LOG_LEVEL} \
-                         --log-file /logs/`cat /etc/hostname`/${LOG_FILE} \
-                         --log-format "${LOG_FORMAT}" \
-                         --log-file-count ${LOG_FILE_COUNT}\
-                         --log-file-size ${LOG_FILE_SIZE}\
-                         --retry-max-count ${RETRY_MAX_COUNT}
+    -mh ${MQ_HOST} -mp ${MQ_PORT} \
+    -dh ${DB_HOST} -dp ${DB_PORT} \
+    --schema-store ${SCHEMA_STORE}\
+    --local-schema-dir ${LOCAL_SCHEMA_DIR}\
+    --log-level ${LOG_LEVEL} \
+    --log-file /logs/`cat /etc/hostname`/${LOG_FILE} \
+    --log-format "${LOG_FORMAT}" \
+    --log-file-count ${LOG_FILE_COUNT}\
+    --log-file-size ${LOG_FILE_SIZE}\
+    --retry-max-count ${RETRY_MAX_COUNT}

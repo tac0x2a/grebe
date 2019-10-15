@@ -2,14 +2,15 @@
 
 from clickhouse_driver import Client
 import pika
-import logging.handlers
+
 import logging
+import logging.handlers
 import os
-import pickle
 from datetime import datetime, timezone, timedelta
 
 from br2dl import dbms_clickhouse as dbms
-from br2dl.local_schema import LocalSchema
+from br2dl.schema_store_yaml import SchemaStoreYAML
+from br2dl.schema_store_clickhouse import SchemaStoreClickhouse
 
 # Argument Parsing
 import argparse
@@ -59,14 +60,8 @@ if args.log_file:
 logger = logging.getLogger("Grebe")
 logger.info(args)
 
-# Schema
-schema_file = os.path.join(SCHEMA_DIR, "schema_db_" + DB_HOST + ".db")
-schema_proxy = LocalSchema(schema_file)
-logger.info("Create schema file: '{}'".format(schema_file))
 
 # Retry processing
-
-
 def send_retry(channel, method, properties, body):
     RetryCountKey = "x-grebe-retry-count"
 
@@ -98,7 +93,7 @@ def callback(channel, method, properties, body):
         types, values = dbms.json2lcickhouse(payload)
 
         serialized = dbms.serialize_schema(types, source_id)
-        data_table_name = dbms.get_table_name_with_insert_if_new_schema(client, source_id, types, serialized, schema_cache)
+        data_table_name = dbms.get_table_name_with_insert_if_new_schema(client, store, source_id, types, serialized, schema_cache)
         dbms.insert_data(client, data_table_name, values)
 
         logger.debug(serialized)
@@ -125,8 +120,14 @@ logger.info("RabbitMQ connected({}:{})".format(MQ_HOST, MQ_POST))
 client = Client(DB_HOST, DB_PORT)
 logger.info("Clickhouse connected({}:{})".format(DB_HOST, DB_PORT))
 
-dbms.create_schema_table(client)  # init
-schema_cache = dbms.select_all_schemas(client)
+# Load Schema
+# schema_file = os.path.join(SCHEMA_DIR, "schema_db_" + DB_HOST + ".yaml")
+# store = SchemaStoreYAML(ema_file)
+# logger.info("Create schema file: '{}'".format(schema_file))
+
+store = SchemaStoreClickhouse(client)
+
+schema_cache = store.load_all_schemas()
 logger.info("Load {} schemas from DB".format(len(schema_cache)))
 logger.debug("Schemas: {}".format([s for s in schema_cache.values()]))
 

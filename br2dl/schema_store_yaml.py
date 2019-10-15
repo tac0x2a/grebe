@@ -2,7 +2,7 @@ import os
 import yaml
 
 
-class LocalSchema():
+class SchemaStoreYAML():
     def __init__(self, schema_file):
         self.schema_file = schema_file
 

@@ -23,7 +23,7 @@ Grebe is forwarder JSON message from RabbitMQ to Clickhouse.
 $ pip install -r requirements.txt
 $ chmod +x grebe.py
 
-$ ./grebe.py biwako -mh 192.168.11.200 -dh 192.168.11.200 -dp 19000
+$ ./grebe.py biwako -mh 192.168.11.200 -dh 192.168.11.200
 ```
 
 ## Test
@@ -37,6 +37,8 @@ $ pytest
 $ ./grebe.py -h
 
 usage: grebe.py [-h] [-mh MH] [-mp MP] [-dh DH] [-dp DP]
+                [--schema-store {local,rdb}]
+                [--local-schema-dir LOCAL_SCHEMA_DIR]
                 [--log-level {DEBUG,INFO,WARN,ERROR}]
                 [--log-format LOG_FORMAT] [--log-file LOG_FILE]
                 [--log-file-count LOG_FILE_COUNT]
@@ -45,6 +47,7 @@ usage: grebe.py [-h] [-mh MH] [-mp MP] [-dh DH] [-dp DP]
                 queue_name
 
 Forward JSON message from RabbitMQ to Clickhouse
+
 positional arguments:
   queue_name            Queue name to subscribe on RabbitMQ
 
@@ -54,6 +57,10 @@ optional arguments:
   -mp MP                RabbitMQ port
   -dh DH                Clickhouse host
   -dp DP                Clickhouse port by native connection
+  --schema-store {local,rdb}
+                        Schema store location
+  --local-schema-dir LOCAL_SCHEMA_DIR
+                        Schema DB directory path when schema-sotre is local
   --log-level {DEBUG,INFO,WARN,ERROR}
                         Log level
   --log-format LOG_FORMAT
@@ -65,6 +72,7 @@ optional arguments:
                         Size of each log file
   --retry-max-count RETRY_MAX_COUNT
                         Max count of retry to processing. Message is discard
+                        when exceeded max count.
 ```
 
 ## Contributing

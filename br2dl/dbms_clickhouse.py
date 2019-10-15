@@ -7,6 +7,7 @@ from dateutil.tz import tzutc
 import logging
 logger = logging.getLogger("dbms_clickhouse")
 
+
 def json2clickhouse_sub_list(key, list, types, values):
     items = []
     items_ns = []
@@ -82,7 +83,8 @@ def json2lcickhouse_sub(key, body, types, values):
 
     return
 
-def json2lcickhouse(src_json_str, logger = None):
+
+def json2lcickhouse(src_json_str, logger=None):
     """Convert json string to python dict with data types for Clickhouse"""
     body = json.loads(src_json_str)
 
@@ -92,27 +94,18 @@ def json2lcickhouse(src_json_str, logger = None):
     for key, value in body.items():
         json2lcickhouse_sub(key, value, types, values)
 
-    # convert as string for clickhouse query.
-    values_as_string = {}
-
     return [types, values]
 
 # ---------------------------------------------------------------------
-def query_create_schema_table(schema_table_name = "schema_table"):
-    return "CREATE TABLE IF NOT EXISTS {} (__create_at DateTime DEFAULT now(), source_id String, schema String, table_name String) ENGINE = MergeTree PARTITION BY source_id ORDER BY (source_id, schema)".format(schema_table_name)
 
-def query_get_schema_table_all(schema_table_name = "schema_table"):
-    return "SELECT schema, table_name, source_id FROM {} ORDER BY table_name".format(schema_table_name)
-
-def query_insert_schema_table_without_value(schema_table_name = "schema_table"):
-    return "INSERT INTO {} (source_id, schema, table_name) VALUES".format(schema_table_name)
 
 def query_create_data_table(column_types_map, data_table_name):
-    columns_def_string = ", ".join([ "\"{}\" {}".format(c,t) for c,t in column_types_map.items() ])
+    columns_def_string = ", ".join(["\"{}\" {}".format(c, t) for c, t in column_types_map.items()])
     return "CREATE TABLE IF NOT EXISTS {} ({}, __create_at DateTime DEFAULT now(), __collected_at DateTime, __uid UUID DEFAULT generateUUIDv4()) ENGINE = MergeTree PARTITION BY toYYYYMM(__create_at) ORDER BY (__create_at)".format(data_table_name, columns_def_string)
 
+
 def query_insert_data_table_without_value(column_names, data_table_name):
-    columns_str = ", ".join([ '"'+c+'"' for c in column_names])
+    columns_str = ", ".join(['"' + c + '"' for c in column_names])
     return "INSERT INTO {} ({}) VALUES".format(data_table_name, columns_str)
 
 
@@ -121,11 +114,12 @@ def serialize_schema(types, source_id):
     """
     serialize schema to string
     """
-    serialized = str(sorted([[k,v] for k,v in types.items()]))
+    serialized = str(sorted([[k, v] for k, v in types.items()]))
     return source_id + "_" + serialized
 
+
 def generate_new_table_name(source_id, schema_cache):
-    tables = [ t for t in schema_cache.values() if t.startswith(source_id) ]
+    tables = [t for t in schema_cache.values() if t.startswith(source_id)]
     next_idx = 1
     if len(tables) > 0:
         least_table = sorted(tables)[-1]
@@ -135,24 +129,12 @@ def generate_new_table_name(source_id, schema_cache):
     return source_id + "_" + next_number_idx
 
 
-def select_all_schemas(client):
-    query = query_get_schema_table_all()
-    tables = client.execute(query) # [(serialized_schema, table_name, source_id),]
-    return { s:n for (s,n,i) in tables }
-
-def create_schema_table(client):
-    query = query_create_schema_table()
-    client.execute(query)
-
-def insert_schema(client, source_id, data_table_name, serialized_schema):
-    query = query_insert_schema_table_without_value()
-    client.execute(query, [{"source_id": source_id, "schema": serialized_schema, "table_name": data_table_name}])
-
 def create_data_table(client, types, new_table_name):
     query = query_create_data_table(types, new_table_name)
     client.execute(query)
 
-def get_table_name_with_insert_if_new_schema(client, source_id, types, serialized, schema_cache, max_sleep_sec=60):
+
+def get_table_name_with_insert_if_new_schema(client, store, source_id, types, serialized, schema_cache, max_sleep_sec=60):
     if serialized in schema_cache.keys():
         return schema_cache[serialized]
 
@@ -164,7 +146,7 @@ def get_table_name_with_insert_if_new_schema(client, source_id, types, serialize
     sleep(sleep_sec)
 
     # new format data received.
-    new_schemas = select_all_schemas(client)
+    new_schemas = store.load_all_schemas()
     schema_cache.update(new_schemas)
 
     if serialized in schema_cache.keys():
@@ -173,12 +155,13 @@ def get_table_name_with_insert_if_new_schema(client, source_id, types, serialize
 
     # it is true new schema !!
     new_table_name = generate_new_table_name(source_id, schema_cache)
-    insert_schema(client, source_id, new_table_name, serialized)
     create_data_table(client, types, new_table_name)
+    store.store_schema(source_id, new_table_name, serialized)
     schema_cache[serialized] = new_table_name
     logger.info("Create new schema '{}' as '{}'".format(serialized, new_table_name))
 
     return new_table_name
+
 
 def insert_data(client, data_table_name, values):
     query = query_insert_data_table_without_value(values.keys(), data_table_name)

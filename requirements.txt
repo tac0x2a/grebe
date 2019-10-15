@@ -3,6 +3,7 @@ pytest
 python-dateutil
 pika
 clickhouse_driver
+pyyaml
 
 ###### Requirements with Version Specifiers ######`
 # Example

@@ -21,6 +21,8 @@ class SchemaStoreYAML():
             local_schemas = yaml.load(db)
         return local_schemas
 
-    def store_all_schemas(self, schemas):
+    def store_schema(self, source_id, new_table_name, schema):
+        schemas = self.load_all_schemas()
+        schemas.update({schema: new_table_name})
         with open(self.schema_file, 'w') as db:
             yaml.dump(schemas, db)

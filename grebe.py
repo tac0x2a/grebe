@@ -127,7 +127,7 @@ logger.info("Clickhouse connected({}:{})".format(DB_HOST, DB_PORT))
 if SCHEMA_STORE == 'rdb':
     store = SchemaStoreClickhouse(client)
 else:
-    schema_file = os.path.join(SCHEMA_DIR, "schema_db_" + DB_HOST + ".yaml")
+    schema_file = os.path.join(SCHEMA_DIR, f"schema_db_{DB_HOST}_{DB_PORT}.yml")
     store = SchemaStoreYAML(schema_file)
 
 schema_cache = store.load_all_schemas()

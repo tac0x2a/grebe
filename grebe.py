@@ -21,7 +21,8 @@ parser.add_argument('-mp', help='RabbitMQ port', type=int, default=5672)
 parser.add_argument('-dh', help='Clickhouse host', default='localhost')
 parser.add_argument('-dp', help='Clickhouse port by native connection', type=int, default=9000)
 
-parser.add_argument('--schema-dir', help='Local schema DB dir path', default="schemas")
+parser.add_argument('--schema-store', help='Schema store location', choices=['local', 'rdb'], default="local")
+parser.add_argument('--local-schema-dir', help='Schema DB directory path when schema-sotre is local', default="schemas")
 
 parser.add_argument('--log-level', help='Log level', choices=['DEBUG', 'INFO', 'WARN', 'ERROR'], default='INFO')
 parser.add_argument('--log-format', help='Log format by \'logging\' package', default='[%(levelname)s] %(asctime)s | %(pathname)s(L%(lineno)s) | %(message)s')  # Optional
@@ -40,7 +41,9 @@ MQ_POST = args.mp
 DB_HOST = args.dh
 DB_PORT = args.dp
 RETRY_MAX = args.retry_max_count
-SCHEMA_DIR = args.schema_dir
+
+SCHEMA_STORE = args.schema_store
+SCHEMA_DIR = args.local_schema_dir
 
 
 # Logger initialize
@@ -121,11 +124,11 @@ client = Client(DB_HOST, DB_PORT)
 logger.info("Clickhouse connected({}:{})".format(DB_HOST, DB_PORT))
 
 # Load Schema
-# schema_file = os.path.join(SCHEMA_DIR, "schema_db_" + DB_HOST + ".yaml")
-# store = SchemaStoreYAML(ema_file)
-# logger.info("Create schema file: '{}'".format(schema_file))
-
-store = SchemaStoreClickhouse(client)
+if SCHEMA_STORE == 'rdb':
+    store = SchemaStoreClickhouse(client)
+else:
+    schema_file = os.path.join(SCHEMA_DIR, "schema_db_" + DB_HOST + ".yaml")
+    store = SchemaStoreYAML(schema_file)
 
 schema_cache = store.load_all_schemas()
 logger.info("Load {} schemas from DB".format(len(schema_cache)))

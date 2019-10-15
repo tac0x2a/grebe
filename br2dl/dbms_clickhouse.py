@@ -94,9 +94,6 @@ def json2lcickhouse(src_json_str, logger=None):
     for key, value in body.items():
         json2lcickhouse_sub(key, value, types, values)
 
-    # convert as string for clickhouse query.
-    values_as_string = {}
-
     return [types, values]
 
 # ---------------------------------------------------------------------

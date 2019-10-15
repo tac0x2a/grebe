@@ -35,7 +35,7 @@ ENV DB_PORT  9000
 ENV SCHEMA_STORE local
 
 # Schema DB directory path when schema-sotre is local
-ENV LOCAL_SCHEMA_DIR schemas
+ENV LOCAL_SCHEMA_DIR /schemas
 
 # Log level [DEBUG, INFO, WARN, ERROR]
 ENV LOG_LEVEL INFO
@@ -56,8 +56,9 @@ ENV LOG_FILE_SIZE  1000000
 ENV RETRY_MAX_COUNT 3
 
 
-RUN mkdir /logs
+RUN mkdir /logs /schemas
 VOLUME /logs
+VOLUME /schemas
 
 ENTRYPOINT python ./grebe.py ${MQ_QNAME} \
     -mh ${MQ_HOST} -mp ${MQ_PORT} \

@@ -1,19 +1,21 @@
-version: '3'
+version: "3"
 services:
   grebe:
     build: .
     environment:
-      - MQ_QNAME=<queue name>  # Queue name to subscribe on RabbitMQ
-      - MQ_HOST=<hostname>   # RabbitMQ host
-      - DB_HOST=<hostname>   # Clickhouse host
+      - MQ_QNAME=<queue name> # Queue name to subscribe on RabbitMQ
+      - MQ_HOST=<hostname> # RabbitMQ host
+      - DB_HOST=<hostname> # Clickhouse host
+      # - SCHEMA_STORE=local # Schema store location
+      # - LOCAL_SCHEMA_DIR=schemas # Schema DB directory path when schema-sotre is local
       # - LOG_FILE_COUNT=1000    # Count of file files kept
       # - LOG_FILE_SIZE=1000000 # Size of each log file(KB)
       # - MQ_POST=5672 # RabbitMQ port
       # - DB_PORT=9000 # Clickhouse port by native connection
       # - LOG_LEVEL=INFO # Log level [DEBUG, INFO, WARN, ERROR]
       # - LOG_FORMAT='[%(levelname)s] %(asctime)s | %(pathname)s(L%(lineno)s) | %(message)s'  #  Log format by 'logging' package
-      # - LOG_FILE=logfile # Log file name
+      # - LOG_FILE=/logs/greabe.log # Log file name
       # - RETRY_MAX_COUNT=3 # Max count of retry to processing.
     volumes:
-      - ./volume:/logs
-
+      - ./volume/logs:/logs
+      - ./volume/schemas:/schemas

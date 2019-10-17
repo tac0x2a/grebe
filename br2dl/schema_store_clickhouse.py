@@ -1,4 +1,3 @@
-from . import time_parser
 
 import json
 import datetime

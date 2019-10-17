@@ -8,6 +8,8 @@ import logging.handlers
 import os
 from datetime import datetime, timezone, timedelta
 
+from lakeweed import clickhouse as j2r
+
 from br2dl import dbms_clickhouse as dbms
 from br2dl.schema_store_yaml import SchemaStoreYAML
 from br2dl.schema_store_clickhouse import SchemaStoreClickhouse
@@ -93,7 +95,7 @@ def callback(channel, method, properties, body):
         source_id = topic.replace("/", "_").replace(".", "_")
         payload = str(body.decode('utf-8'))
 
-        types, values = dbms.json2lcickhouse(payload)
+        (types, values) = j2r.json2type_value(payload)
 
         serialized = dbms.serialize_schema(types, source_id)
         data_table_name = dbms.get_table_name_with_insert_if_new_schema(client, store, source_id, types, serialized, schema_cache)

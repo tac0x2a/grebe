@@ -34,6 +34,9 @@ ENV DB_PORT  9000
 # Schema store location
 ENV SCHEMA_STORE local
 
+# File path to specified column types
+ENV TYPE_FILE ''
+
 # Schema DB directory path when schema-sotre is local
 ENV LOCAL_SCHEMA_DIR /schemas
 
@@ -65,6 +68,7 @@ ENTRYPOINT python ./grebe.py ${MQ_QNAME} \
     -dh ${DB_HOST} -dp ${DB_PORT} \
     --schema-store ${SCHEMA_STORE}\
     --local-schema-dir ${LOCAL_SCHEMA_DIR}\
+    --type-file ${TYPE_FILE}\
     --log-level ${LOG_LEVEL} \
     --log-file /logs/`cat /etc/hostname`/${LOG_FILE} \
     --log-format "${LOG_FORMAT}" \

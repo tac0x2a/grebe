@@ -39,6 +39,7 @@ $ ./grebe.py -h
 usage: grebe.py [-h] [-mh MH] [-mp MP] [-dh DH] [-dp DP]
                 [--schema-store {local,rdb}]
                 [--local-schema-dir LOCAL_SCHEMA_DIR]
+                [--type-file TYPE_FILE]
                 [--log-level {DEBUG,INFO,WARN,ERROR}]
                 [--log-format LOG_FORMAT] [--log-file LOG_FILE]
                 [--log-file-count LOG_FILE_COUNT]
@@ -61,6 +62,8 @@ optional arguments:
                         Schema store location
   --local-schema-dir LOCAL_SCHEMA_DIR
                         Schema DB directory path when schema-sotre is local
+  --type-file TYPE_FILE
+                        File path to specified column types
   --log-level {DEBUG,INFO,WARN,ERROR}
                         Log level
   --log-format LOG_FORMAT
@@ -74,6 +77,27 @@ optional arguments:
                         Max count of retry to processing. Message is discard
                         when exceeded max count.
 ```
+
+## Specified type file format
+
+General
+```yml
+<source_id> :
+  <field_name> : <type>
+  <field_name> : <type>
+  ...
+```
+
+Example
+```yml
+weather:
+  temperature : double
+  location__longitude : double
+  location__latitude  : double
+  ...
+```
+
+Please see [LakeWeed](https://github.com/tac0x2a/lake_weed).
 
 ## Contributing
 

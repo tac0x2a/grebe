@@ -3,6 +3,7 @@
 from clickhouse_driver import Client
 import pika
 
+import yaml
 import logging
 import logging.handlers
 import os
@@ -25,6 +26,8 @@ parser.add_argument('-dp', help='Clickhouse port by native connection', type=int
 
 parser.add_argument('--schema-store', help='Schema store location', choices=['local', 'rdb'], default="local")
 parser.add_argument('--local-schema-dir', help='Schema DB directory path when schema-sotre is local', default="schemas")
+
+parser.add_argument('--type-file', help='File path to specified column types')
 
 parser.add_argument('--log-level', help='Log level', choices=['DEBUG', 'INFO', 'WARN', 'ERROR'], default='INFO')
 parser.add_argument('--log-format', help='Log format by \'logging\' package', default='[%(levelname)s] %(asctime)s | %(pathname)s(L%(lineno)s) | %(message)s')  # Optional
@@ -49,7 +52,6 @@ SCHEMA_DIR = args.local_schema_dir
 
 
 # Logger initialize
-
 logging.basicConfig(level=args.log_level, format=args.log_format)
 
 if args.log_file:
@@ -95,7 +97,12 @@ def callback(channel, method, properties, body):
         source_id = topic.replace("/", "_").replace(".", "_")
         payload = str(body.decode('utf-8'))
 
-        (types, values) = j2r.json2type_value(payload)
+        if source_id in specified_types.keys():
+            spec_types = specified_types[source_id]
+        else :
+            spec_types = {}
+
+        (types, values) = j2r.json2type_value(payload, specified_types=spec_types)
 
         serialized = dbms.serialize_schema(types, source_id)
         data_table_name = dbms.get_table_name_with_insert_if_new_schema(client, store, source_id, types, serialized, schema_cache)
@@ -135,6 +142,16 @@ else:
 schema_cache = store.load_all_schemas()
 logger.info(f"Load {len(schema_cache)} schemas from {SCHEMA_STORE}")
 logger.info(f"Schemas: {[s for s in schema_cache.values()]}")
+
+# Loading specified type file
+specified_types = {}
+if args.type_file:
+    try:
+        with open(args.type_file, 'r') as tf:
+            specified_types = yaml.load(tf)
+            logger.info(f"Load specified types. {specified_types}")
+    except (FileNotFoundError, yaml.parser.ParserError, yaml.scanner.ScannerError) as e:
+        logger.warning(f"type-file load failed. ('{args.type_file}') ignored specified types. ({e})")
 
 # start cousuming
 logger.info("Consuming ...")

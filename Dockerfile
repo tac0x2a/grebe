@@ -35,7 +35,7 @@ ENV DB_PORT  9000
 ENV SCHEMA_STORE local
 
 # File path to specified column types
-ENV TYPE_FILE ''
+ENV TYPE_FILE /type.yml
 
 # Schema DB directory path when schema-sotre is local
 ENV LOCAL_SCHEMA_DIR /schemas

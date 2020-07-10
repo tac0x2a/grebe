@@ -99,6 +99,13 @@ weather:
 
 Please see [LakeWeed](https://github.com/tac0x2a/lake_weed).
 
+
+## Deploy docker image
+```
+git tag vX.Y.Z
+git push origin master --tags
+```
+
 ## Contributing
 
 1. Fork it ( https://github.com/tac0x2a/grebe/fork )

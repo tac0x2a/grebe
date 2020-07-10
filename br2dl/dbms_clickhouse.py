@@ -12,7 +12,7 @@ def query_create_data_table(column_types_map, data_table_name):
             column_types_map[c] = "Nullable({})".format(t)
 
     columns_def_string = ", ".join(["\"{}\" {}".format(c, t) for c, t in column_types_map.items()])
-    return "CREATE TABLE IF NOT EXISTS {} ({}, __create_at DateTime DEFAULT now(), __collected_at DateTime, __uid UUID DEFAULT generateUUIDv4()) ENGINE = MergeTree PARTITION BY toYYYYMM(__create_at) ORDER BY (__create_at)".format(data_table_name, columns_def_string)
+    return "CREATE TABLE IF NOT EXISTS {} ({}, __create_at DateTime DEFAULT now(), __uid UUID DEFAULT generateUUIDv4()) ENGINE = MergeTree PARTITION BY toYYYYMM(__create_at) ORDER BY (__create_at)".format(data_table_name, columns_def_string)
 
 
 def query_insert_data_table_without_value(column_names, data_table_name):

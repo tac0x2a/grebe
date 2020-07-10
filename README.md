@@ -1,5 +1,5 @@
 # Grebe
-[![Build Status](https://travis-ci.org/tac0x2a/grebe.svg?branch=master)](https://travis-ci.org/tac0x2a/grebe)
+![Python application](https://github.com/tac0x2a/grebe/workflows/Python%20application/badge.svg)
 
 ```
    　 　 ＿

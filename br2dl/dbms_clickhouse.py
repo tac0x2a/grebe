@@ -52,11 +52,11 @@ def get_table_name_with_insert_if_new_schema(client, store, source_id, columns, 
         return schema_cache[serialized]
 
     # if multi grebe working, need to weak-consistency.
-    import random
-    from time import sleep
-    sleep_sec = random.randint(0, max_sleep_sec)
-    logger.info("Detected new schema '{}'. Random waiting {} sec ...".format(source_id, sleep_sec))
-    sleep(sleep_sec)
+    # import random
+    # from time import sleep
+    # sleep_sec = random.randint(0, max_sleep_sec)
+    # logger.info("Detected new schema '{}'. Random waiting {} sec ...".format(source_id, sleep_sec))
+    # sleep(sleep_sec)
 
     # new format data received.
     new_schemas = store.load_all_schemas()

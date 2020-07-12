@@ -1,4 +1,4 @@
-FROM python:3.7.4-alpine3.10
+FROM python:3.8.3-alpine3.12
 
 MAINTAINER TAC <tac@tac42.net>
 # Forward JSON message from RabbitMQ to Clickhouse
@@ -8,9 +8,9 @@ ADD README.md grebe.py requirements.txt /grebe/
 ADD br2dl /grebe/br2dl
 WORKDIR /grebe
 
-RUN apk add --no-cache --virtual .build-deps gcc musl-dev && \
+RUN apk add --no-cache --virtual .build-deps gcc g++ musl-dev && \
     pip install -r requirements.txt && \
-    apk del .build-deps gcc musl-dev binutils gmp libgomp libatomic libgcc mpfr3 mpc1 libstdc++ musl-dev
+    apk del .build-deps gcc g++ musl-dev
 
 ################
 # Environments #

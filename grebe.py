@@ -9,7 +9,7 @@ import logging.handlers
 import os
 from datetime import datetime, timezone, timedelta
 
-from lakeweed import clickhouse as j2r
+from lakeweed import clickhouse as d2c
 
 from br2dl import dbms_clickhouse as dbms
 from br2dl.schema_store_yaml import SchemaStoreYAML
@@ -99,14 +99,14 @@ def callback(channel, method, properties, body):
 
         if source_id in specified_types.keys():
             spec_types = specified_types[source_id]
-        else :
+        else:
             spec_types = {}
 
-        (types, values) = j2r.json2type_value(payload, specified_types=spec_types)
+        (columns, types, values_list) = d2c.data_string2type_value(payload, specified_types=spec_types)
 
-        serialized = dbms.serialize_schema(types, source_id)
-        data_table_name = dbms.get_table_name_with_insert_if_new_schema(client, store, source_id, types, serialized, schema_cache)
-        dbms.insert_data(client, data_table_name, values)
+        serialized = dbms.serialize_schema(columns, types, source_id)
+        data_table_name = dbms.get_table_name_with_insert_if_new_schema(client, store, source_id, columns, types, serialized, schema_cache)
+        dbms.insert_data(client, data_table_name, columns, values_list)
 
         logger.debug(serialized)
 

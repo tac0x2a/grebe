@@ -5,7 +5,9 @@ logger = logging.getLogger("dbms_clickhouse")
 # ---------------------------------------------------------------------
 
 
-def query_create_data_table(column_types_map, data_table_name):
+def query_create_data_table(columns, types, data_table_name):
+    column_types_map = {c: t for c, t in zip(columns, types)}
+
     # Column is already Nullable with out array.
     for c, t in column_types_map.items():
         if not t.startswith("Array"):
@@ -21,11 +23,11 @@ def query_insert_data_table_without_value(column_names, data_table_name):
 
 
 # ---------------------------------------------------------------------
-def serialize_schema(types, source_id):
+def serialize_schema(columns, types, source_id):
     """
     serialize schema to string
     """
-    serialized = str(sorted([[k, v] for k, v in types.items()]))
+    serialized = str(sorted([[k, v] for k, v in zip(columns, types)]))
     return source_id + "_" + serialized
 
 
@@ -40,12 +42,12 @@ def generate_new_table_name(source_id, schema_cache):
     return source_id + "_" + next_number_idx
 
 
-def create_data_table(client, types, new_table_name):
-    query = query_create_data_table(types, new_table_name)
+def create_data_table(client, columns, types, new_table_name):
+    query = query_create_data_table(columns, types, new_table_name)
     client.execute(query)
 
 
-def get_table_name_with_insert_if_new_schema(client, store, source_id, types, serialized, schema_cache, max_sleep_sec=60):
+def get_table_name_with_insert_if_new_schema(client, store, source_id, columns, types, serialized, schema_cache, max_sleep_sec=60):
     if serialized in schema_cache.keys():
         return schema_cache[serialized]
 
@@ -66,7 +68,7 @@ def get_table_name_with_insert_if_new_schema(client, store, source_id, types, se
 
     # it is true new schema !!
     new_table_name = generate_new_table_name(source_id, schema_cache)
-    create_data_table(client, types, new_table_name)
+    create_data_table(client, columns, types, new_table_name)
     store.store_schema(source_id, new_table_name, serialized)
     schema_cache[serialized] = new_table_name
     logger.info("Create new schema '{}' as '{}'".format(serialized, new_table_name))
@@ -74,6 +76,6 @@ def get_table_name_with_insert_if_new_schema(client, store, source_id, types, se
     return new_table_name
 
 
-def insert_data(client, data_table_name, values):
-    query = query_insert_data_table_without_value(values.keys(), data_table_name)
-    client.execute(query, [values])
+def insert_data(client, data_table_name, columns, values_list):
+    query = query_insert_data_table_without_value(columns, data_table_name)
+    client.execute(query, values_list)

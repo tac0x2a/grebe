@@ -7,7 +7,6 @@ import yaml
 import logging
 import logging.handlers
 import os
-from datetime import datetime, timezone, timedelta
 
 from lakeweed import clickhouse as d2c
 
@@ -17,7 +16,7 @@ from br2dl.schema_store_clickhouse import SchemaStoreClickhouse
 
 # Argument Parsing
 import argparse
-parser = argparse.ArgumentParser(description='Forward JSON message from RabbitMQ to Clickhouse')
+parser = argparse.ArgumentParser(description='Forward Data-like string message from RabbitMQ to Clickhouse')
 parser.add_argument('queue_name', help='Queue name to subscribe on RabbitMQ')  # Required
 parser.add_argument('-mh', help='RabbitMQ host', default='localhost')
 parser.add_argument('-mp', help='RabbitMQ port', type=int, default=5672)

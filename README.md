@@ -12,18 +12,19 @@
 　　　　￣　 ―　　＿　　 二　　 ー
 ```
 
-Grebe is forwarder JSON message from RabbitMQ to Clickhouse.
+Grebe is forwarder Data-like string message from RabbitMQ to Clickhouse.
 
-1. Receive JSON message from RabbitMQ specified queue on RabbitMQ.
-2. Parse, convert, and create table if need it. Each attributes are mapped to columns on Clickhouse table.
+1. Receive JSON, JSON Lines or CSV like string as message from RabbitMQ specified queue on RabbitMQ.
+2. Parse, convert, and create table if need it by [Lake Weed](https://github.com/tac0x2a/lake_weed). Each attributes are mapped to columns on Clickhouse table.
 
 ## Usage
 
+### Example
 ```sh
 $ pip install -r requirements.txt
 $ chmod +x grebe.py
 
-$ ./grebe.py biwako -mh 192.168.11.200 -dh 192.168.11.200
+$ ./grebe.py nayco -mh 192.168.11.200 -dh 192.168.11.200
 ```
 
 ## Test
@@ -47,7 +48,7 @@ usage: grebe.py [-h] [-mh MH] [-mp MP] [-dh DH] [-dp DP]
                 [--retry-max-count RETRY_MAX_COUNT]
                 queue_name
 
-Forward JSON message from RabbitMQ to Clickhouse
+Forward Data-like string message from RabbitMQ to Clickhouse
 
 positional arguments:
   queue_name            Queue name to subscribe on RabbitMQ
@@ -97,7 +98,7 @@ weather:
   ...
 ```
 
-Please see [LakeWeed](https://github.com/tac0x2a/lake_weed).
+This feature is provided by [Lake Weed](https://github.com/tac0x2a/lake_weed).
 
 
 ## Deploy docker image

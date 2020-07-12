@@ -1,4 +1,4 @@
-FROM python:3.8.3-alpine3.12
+FROM python:3.8.3-slim
 
 MAINTAINER TAC <tac@tac42.net>
 # Forward JSON message from RabbitMQ to Clickhouse
@@ -8,9 +8,16 @@ ADD README.md grebe.py requirements.txt /grebe/
 ADD br2dl /grebe/br2dl
 WORKDIR /grebe
 
-RUN apk add --no-cache --virtual .build-deps gcc g++ musl-dev && \
-    pip install -r requirements.txt && \
-    apk del .build-deps gcc g++ musl-dev
+RUN apt-get update && apt-get -y upgrade \
+    && apt-get install -y --no-install-recommends gcc g++ musl-dev \
+    && pip install -r requirements.txt \
+    && apt-get clean \
+    && apt-get autoclean \
+    && apt-get autoremove \
+    && rm -rf /tmp/* /var/tmp/* \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /var/lib/apt/lists/*
+
 
 ################
 # Environments #

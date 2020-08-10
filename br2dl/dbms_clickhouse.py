@@ -1,12 +1,12 @@
 
-
+from collections import OrderedDict
 import re
+import json
 import logging
 logger = logging.getLogger("dbms_clickhouse")
 
+
 # ---------------------------------------------------------------------
-
-
 def query_create_data_table(columns, types, data_table_name):
     column_types_map = {c: t for c, t in zip(columns, types)}
 
@@ -30,12 +30,14 @@ def query_insert_data_table_without_value(column_names, data_table_name):
 
 
 # ---------------------------------------------------------------------
-def serialize_schema(columns, types, source_id):
+def serialize_schema(columns: tuple, types: tuple, source_id: str) -> str:
     """
     serialize schema to string
     """
-    serialized = str(sorted([[k, v] for k, v in zip(columns, types)]))
-    return source_id + "_" + serialized
+    d = OrderedDict([("source", source_id)])
+    schema = OrderedDict(sorted([(k, v) for k, v in zip(columns, types)]))
+    d["schema"] = schema
+    return json.dumps(d, separators=(',', ':'))
 
 
 def generate_new_table_name(source_id, schema_cache):

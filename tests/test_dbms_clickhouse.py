@@ -17,3 +17,15 @@ def test_return_query_insert_data_table():
     expected = 'INSERT INTO sample_data_table_001 (`sample_f`, `sample_b`) VALUES'
     actual = dbms_clickhouse.query_insert_data_table_without_value(("sample_f", "sample_b"), "sample_data_table_001")
     assert expected == actual
+
+
+def test_serialize_schema_simple():
+    expected = '{"source":"test_source","schema":{"f":"Nullable(Float64)"}}'
+    actual = dbms_clickhouse.serialize_schema(('f', ), ('Nullable(Float64)', ), "test_source")
+    assert expected == actual
+
+
+def test_serialize_schema_sorted_order():
+    expected = '{"source":"test_source","schema":{"a":"Nullable(Float64)","b":"Nullable(Int64)"}}'
+    actual = dbms_clickhouse.serialize_schema(('b', 'a'), ('Nullable(Int64)', 'Nullable(Float64)'), "test_source")
+    assert expected == actual

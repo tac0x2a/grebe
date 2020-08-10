@@ -1,8 +1,3 @@
-
-import json
-import datetime
-from dateutil.tz import tzutc
-
 import logging
 logger = logging.getLogger("schema_store_clickhouse")
 
@@ -36,7 +31,7 @@ class SchemaStoreClickhouse():
     # ----------------------------------------------------
     @classmethod
     def query_create_schema_table(self, schema_table_name="schema_table"):
-        return "CREATE TABLE IF NOT EXISTS {} (__create_at DateTime DEFAULT now(), source_id String, schema String, table_name String) ENGINE = MergeTree PARTITION BY source_id ORDER BY (source_id, schema)".format(schema_table_name)
+        return "CREATE TABLE IF NOT EXISTS {} (__create_at DateTime64(3) DEFAULT now64(3), source_id String, schema String, table_name String) ENGINE = MergeTree PARTITION BY source_id ORDER BY (source_id, schema)".format(schema_table_name)
 
     @classmethod
     def query_get_schema_table_all(self, schema_table_name="schema_table"):

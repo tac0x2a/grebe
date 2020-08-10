@@ -1,4 +1,6 @@
 
+
+import re
 import logging
 logger = logging.getLogger("dbms_clickhouse")
 
@@ -10,15 +12,20 @@ def query_create_data_table(columns, types, data_table_name):
 
     # Column is already Nullable with out array.
     for c, t in column_types_map.items():
-        if not t.startswith("Array"):
+        if t.startswith("Array"):
+            pattern = re.compile(r"Array\((.+)\)", re.IGNORECASE)
+            inner_type_m = pattern.match(t)
+            inner_type = inner_type_m.group(1)
+            column_types_map[c] = f"Array(Nullable({inner_type}))"
+        else:
             column_types_map[c] = "Nullable({})".format(t)
 
-    columns_def_string = ", ".join(["\"{}\" {}".format(c, t) for c, t in column_types_map.items()])
-    return "CREATE TABLE IF NOT EXISTS {} ({}, __create_at DateTime DEFAULT now(), __uid UUID DEFAULT generateUUIDv4()) ENGINE = MergeTree PARTITION BY toYYYYMM(__create_at) ORDER BY (__create_at)".format(data_table_name, columns_def_string)
+    columns_def_string = ", ".join([f"`{c}` {t}" for c, t in column_types_map.items()])
+    return "CREATE TABLE IF NOT EXISTS {} ({}, __create_at DateTime64(3) DEFAULT now64(3), __uid UUID DEFAULT generateUUIDv4()) ENGINE = MergeTree PARTITION BY toYYYYMM(__create_at) ORDER BY (__create_at)".format(data_table_name, columns_def_string)
 
 
 def query_insert_data_table_without_value(column_names, data_table_name):
-    columns_str = ", ".join(['"' + c + '"' for c in column_names])
+    columns_str = ", ".join([f"`{c}`" for c in column_names])
     return "INSERT INTO {} ({}) VALUES".format(data_table_name, columns_str)
 
 
@@ -77,5 +84,9 @@ def get_table_name_with_insert_if_new_schema(client, store, source_id, columns, 
 
 
 def insert_data(client, data_table_name, columns, values_list):
+    logger.debug(f"Try to insert into {data_table_name}")
+    logger.debug(f"Columns {columns}")
+    logger.debug(f"Values {values_list}")
+
     query = query_insert_data_table_without_value(columns, data_table_name)
     client.execute(query, values_list)

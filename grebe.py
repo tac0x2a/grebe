@@ -89,6 +89,9 @@ def send_retry(channel, method, properties, body):
 
 
 def callback(channel, method, properties, body):
+    global schema_cache
+    global store
+
     logger.debug("receive '{}({})'".format(method.routing_key, method.delivery_tag))
     try:
         # replace delimiter in topic mqtt/amqp.
@@ -112,6 +115,13 @@ def callback(channel, method, properties, body):
     except Exception as e:
         logger.error(e, exc_info=e)
         logger.error("Consume failed '{}'. retrying...".format(method.routing_key))
+
+        import re
+        m = re.search("DB::Exception: Table (.+) doesn't exist..", e.message)
+        if m:
+            logger.error(f"Table '{ m.group(1) }' is renamed? Update schema table cache.")
+            schema_cache = store.load_all_schemas()
+
         send_retry(channel, method, properties, body)
 
     finally:

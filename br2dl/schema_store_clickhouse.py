@@ -1,4 +1,5 @@
 import logging
+from . import dbms_clickhouse as ch
 logger = logging.getLogger("schema_store_clickhouse")
 
 
@@ -31,12 +32,12 @@ class SchemaStoreClickhouse():
     # ----------------------------------------------------
     @classmethod
     def query_create_schema_table(self, schema_table_name="schema_table"):
-        return "CREATE TABLE IF NOT EXISTS {} (__create_at DateTime64(3) DEFAULT now64(3), source_id String, schema String, table_name String) ENGINE = MergeTree PARTITION BY source_id ORDER BY (source_id, schema)".format(schema_table_name)
+        return "CREATE TABLE IF NOT EXISTS `{}` (__create_at DateTime64(3) DEFAULT now64(3), source_id String, schema String, table_name String) ENGINE = MergeTree PARTITION BY source_id ORDER BY (source_id, schema)".format(ch.escape_symbol(schema_table_name))
 
     @classmethod
     def query_get_schema_table_all(self, schema_table_name="schema_table"):
-        return "SELECT schema, table_name, source_id FROM {} ORDER BY table_name".format(schema_table_name)
+        return "SELECT schema, table_name, source_id FROM `{}` ORDER BY table_name".format(ch.escape_symbol(schema_table_name))
 
     @classmethod
     def query_insert_schema_table_without_value(self, schema_table_name="schema_table"):
-        return "INSERT INTO {} (source_id, schema, table_name) VALUES".format(schema_table_name)
+        return "INSERT INTO `{}` (source_id, schema, table_name) VALUES".format(ch.escape_symbol(schema_table_name))

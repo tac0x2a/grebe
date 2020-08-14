@@ -20,13 +20,13 @@ def query_create_data_table(columns, types, data_table_name):
         else:
             column_types_map[c] = "Nullable({})".format(t)
 
-    columns_def_string = ", ".join([f"`{c}` {t}" for c, t in column_types_map.items()])
-    return "CREATE TABLE IF NOT EXISTS {} ({}, __create_at DateTime64(3) DEFAULT now64(3), __uid UUID DEFAULT generateUUIDv4()) ENGINE = MergeTree PARTITION BY toYYYYMM(__create_at) ORDER BY (__create_at)".format(data_table_name, columns_def_string)
+    columns_def_string = ", ".join([f"`{escape_symbol(c)}` {t}" for c, t in column_types_map.items()])
+    return f"CREATE TABLE IF NOT EXISTS `{escape_symbol(data_table_name)}` ({columns_def_string}, __create_at DateTime64(3) DEFAULT now64(3), __uid UUID DEFAULT generateUUIDv4()) ENGINE = MergeTree PARTITION BY toYYYYMM(__create_at) ORDER BY (__create_at)"
 
 
 def query_insert_data_table_without_value(column_names, data_table_name):
-    columns_str = ", ".join([f"`{c}`" for c in column_names])
-    return "INSERT INTO {} ({}) VALUES".format(data_table_name, columns_str)
+    columns_str = ", ".join([f"`{escape_symbol(c)}`" for c in column_names])
+    return f"INSERT INTO `{escape_symbol(data_table_name)}` ({columns_str}) VALUES"
 
 
 # ---------------------------------------------------------------------
@@ -70,7 +70,6 @@ def get_table_name_with_insert_if_new_schema(client, store, source_id, columns, 
     # new format data received.
     new_schemas = store.load_all_schemas()
     schema_cache.update(new_schemas)
-
     if serialized in schema_cache.keys():
         logger.info("Schema is already created as '{}'. Keep going!".format(schema_cache[serialized]))
         return schema_cache[serialized]
@@ -92,3 +91,7 @@ def insert_data(client, data_table_name, columns, values_list):
 
     query = query_insert_data_table_without_value(columns, data_table_name)
     client.execute(query, values_list)
+
+
+def escape_symbol(symbol: str):
+    return symbol.replace('`', '\\`')

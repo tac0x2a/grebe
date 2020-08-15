@@ -53,3 +53,57 @@ def test_escape_symbol():
     expected = 'Hello\\`World'
     actual = dbms_clickhouse.escape_symbol('Hello`World')
     assert expected == actual
+
+
+def test_generate_new_table_name():
+    schema_cache = {
+        '{"source":"source","schema":{col":"Float64"}}': 'source_001',
+        '{"source":"source","schema":{"col":"Int64"}}': 'source_002'
+    }
+    source_id = 'source'
+    expected = 'source_003'
+    actual = dbms_clickhouse.generate_new_table_name(source_id, schema_cache)
+    assert expected == actual
+
+
+def test_generate_new_table_name_new_table_cache_is_empty():
+    schema_cache = {}
+    source_id = 'source'
+    expected = 'source_001'
+    actual = dbms_clickhouse.generate_new_table_name(source_id, schema_cache)
+    assert expected == actual
+
+
+def test_generate_new_table_name_new_table_isolated_other_table():
+    schema_cache = {
+        '{"test":"source","schema":{col":"Float64"}}': 'test_001',
+        '{"test":"source","schema":{"col":"Int64"}}': 'test_002'
+    }
+    source_id = 'source'
+    expected = 'source_001'
+    actual = dbms_clickhouse.generate_new_table_name(source_id, schema_cache)
+    assert expected == actual
+
+
+def test_generate_new_table_name_use_unused_number():
+    schema_cache = {
+        '{"source":"source","schema":{col":"Float64"}}': 'source_001',
+        '{"source":"source","schema":{"col":"Int64"}}': 'source_003'
+    }
+    source_id = 'source'
+    expected = 'source_002'
+    actual = dbms_clickhouse.generate_new_table_name(source_id, schema_cache)
+    assert expected == actual
+
+
+def test_generate_new_table_name_isolated_other_tables():
+    schema_cache = {
+        '{"source_hello":"source","schema":{col":"Float64"}}': 'source_hello_001',
+        '{"source_hello":"source","schema":{"col":"Int64"}}': 'source_hello_002',
+        '{"source":"source","schema":{"col":"Int64"}}': 'source_001'
+    }
+    source_id = 'source'
+    expected = 'source_002'
+    actual = dbms_clickhouse.generate_new_table_name(source_id, schema_cache)
+    assert expected == actual
+

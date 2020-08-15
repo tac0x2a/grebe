@@ -41,14 +41,18 @@ def serialize_schema(columns: tuple, types: tuple, source_id: str) -> str:
 
 
 def generate_new_table_name(source_id, schema_cache):
-    tables = [t for t in schema_cache.values() if t.startswith(source_id)]
-    next_idx = 1
-    if len(tables) > 0:
-        least_table = sorted(tables)[-1]
-        next_idx = int(least_table[-3:]) + 1
+    related_tables = [t for t in schema_cache.values() if t.startswith(source_id + "_")]
+    if len(related_tables) <= 0:
+        return f"{source_id}_001"
 
-    next_number_idx = str(next_idx).zfill(3)
-    return source_id + "_" + next_number_idx
+    next_idx = 1
+    table_name_candidate = f"{source_id}_{str(next_idx).zfill(3)}"
+
+    while table_name_candidate in related_tables:
+        next_idx = next_idx + 1
+        table_name_candidate = f"{source_id}_{str(next_idx).zfill(3)}"
+
+    return table_name_candidate
 
 
 def create_data_table(client, columns, types, new_table_name):

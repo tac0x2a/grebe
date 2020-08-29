@@ -9,6 +9,7 @@ services:
       # - SCHEMA_STORE=local # Schema store location
       # - LOCAL_SCHEMA_DIR=schemas # Schema DB directory path when schema-sotre is local
       # - TYPE_FILE=type.yml # File path to specified column types
+      # - TZ_STR=Asia/Tokyo # timezone string from TZ database
       # - LOG_FILE_COUNT=1000    # Count of file files kept
       # - LOG_FILE_SIZE=1000000 # Size of each log file(KB)
       # - MQ_POST=5672 # RabbitMQ port

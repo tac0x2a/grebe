@@ -41,6 +41,7 @@ usage: grebe.py [-h] [-mh MH] [-mp MP] [-dh DH] [-dp DP]
                 [--schema-store {local,rdb}]
                 [--local-schema-dir LOCAL_SCHEMA_DIR]
                 [--type-file TYPE_FILE]
+                [--tz TZ]
                 [--log-level {DEBUG,INFO,WARN,ERROR}]
                 [--log-format LOG_FORMAT] [--log-file LOG_FILE]
                 [--log-file-count LOG_FILE_COUNT]
@@ -65,6 +66,7 @@ optional arguments:
                         Schema DB directory path when schema-sotre is local
   --type-file TYPE_FILE
                         File path to specified column types
+  --tz TZ               Timezone string will be used as default offset in parsing source string if it has no offset
   --log-level {DEBUG,INFO,WARN,ERROR}
                         Log level
   --log-format LOG_FORMAT

@@ -1,7 +1,7 @@
 FROM python:3.8.3-slim
 
-MAINTAINER TAC <tac@tac42.net>
-# Forward JSON message from RabbitMQ to Clickhouse
+LABEL maintainer="tac@tac42.net"
+LABEL Description="Grebe is forwarder Data-like string message from RabbitMQ to Clickhouse." Vendor="TAC" Version="1.2.0"
 
 RUN mkdir /grebe
 ADD README.md grebe.py requirements.txt /grebe/
@@ -44,6 +44,9 @@ ENV SCHEMA_STORE local
 # File path to specified column types
 ENV TYPE_FILE /type.yml
 
+# File path to specified column types
+ENV TZ_STR "UTC"
+
 # Schema DB directory path when schema-sotre is local
 ENV LOCAL_SCHEMA_DIR /schemas
 
@@ -76,6 +79,7 @@ ENTRYPOINT python ./grebe.py ${MQ_QNAME} \
     --schema-store ${SCHEMA_STORE}\
     --local-schema-dir ${LOCAL_SCHEMA_DIR}\
     --type-file ${TYPE_FILE}\
+    --tz "${TZ_STR}" \
     --log-level ${LOG_LEVEL} \
     --log-file /logs/`cat /etc/hostname`/${LOG_FILE} \
     --log-format "${LOG_FORMAT}" \

@@ -27,6 +27,7 @@ parser.add_argument('--schema-store', help='Schema store location', choices=['lo
 parser.add_argument('--local-schema-dir', help='Schema DB directory path when schema-sotre is local', default="schemas")
 
 parser.add_argument('--type-file', help='File path to specified column types')
+parser.add_argument('--tz', help='Timezone string will be used as default offset in parsing source string if it has no offset')
 
 parser.add_argument('--log-level', help='Log level', choices=['DEBUG', 'INFO', 'WARN', 'ERROR'], default='INFO')
 parser.add_argument('--log-format', help='Log format by \'logging\' package', default='[%(levelname)s] %(asctime)s | %(pathname)s(L%(lineno)s) | %(message)s')  # Optional
@@ -49,6 +50,7 @@ RETRY_MAX = args.retry_max_count
 SCHEMA_STORE = args.schema_store
 SCHEMA_DIR = args.local_schema_dir
 
+TZ_STR = args.tz
 
 # Logger initialize
 logging.basicConfig(level=args.log_level, format=args.log_format)
@@ -104,7 +106,7 @@ def callback(channel, method, properties, body):
         else:
             spec_types = {}
 
-        (columns, types, values_list) = d2c.data_string2type_value(payload, specified_types=spec_types)
+        (columns, types, values_list) = d2c.data_string2type_value(payload, specified_types=spec_types, tz_str=TZ_STR)
 
         serialized = dbms.serialize_schema(columns, types, source_id)
         data_table_name = dbms.get_table_name_with_insert_if_new_schema(client, store, source_id, columns, types, serialized, schema_cache)

@@ -5,3 +5,6 @@ pika==1.1.0
 clickhouse-driver==0.1.4
 PyYAML==5.1.2
 lakeweed==1.2.0
+
+
+flask==1.1.2

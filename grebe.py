@@ -4,8 +4,7 @@ from clickhouse_driver import Client
 import pika
 
 import yaml
-import logging
-import logging.handlers
+
 import os
 
 from lakeweed import clickhouse as d2c
@@ -13,6 +12,7 @@ from lakeweed import clickhouse as d2c
 from br2dl import dbms_clickhouse as dbms
 from br2dl.schema_store_yaml import SchemaStoreYAML
 from br2dl.schema_store_clickhouse import SchemaStoreClickhouse
+from br2dl import logger
 
 # Argument Parsing
 import argparse
@@ -53,19 +53,7 @@ SCHEMA_DIR = args.local_schema_dir
 TZ_STR = args.tz
 
 # Logger initialize
-logging.basicConfig(level=args.log_level, format=args.log_format)
-
-if args.log_file:
-    dir = os.path.dirname(args.log_file)
-    if not os.path.exists(dir):
-        os.makedirs(dir)
-
-    fh = logging.handlers.RotatingFileHandler(args.log_file, maxBytes=args.log_file_size, backupCount=args.log_file_count)
-    fh.setFormatter(logging.Formatter(args.log_format))
-    fh.setLevel(args.log_level)
-    logging.getLogger().addHandler(fh)
-
-logger = logging.getLogger("Grebe")
+logger = logger.init_logger(args.log_level, args.log_format, args.log_file_size, args.log_file_count, args.log_file, "Grebe")
 logger.info(args)
 
 

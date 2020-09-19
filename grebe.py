@@ -33,7 +33,7 @@ logger.info(args)
 
 
 # Retry processing
-def send_retry(channel, method, properties, body):
+def send_retry(channel, method, properties, body, logger, retry_max):
     RetryCountKey = "x-grebe-retry-count"
 
     current_retry_count = 0
@@ -41,8 +41,8 @@ def send_retry(channel, method, properties, body):
     if properties.headers and properties.headers.get(RetryCountKey):
         current_retry_count = int(properties.headers.get(RetryCountKey))
 
-    if current_retry_count >= RETRY_MAX:
-        logger.error("Retry count exceeded!!({}). Discard Message = [exchange={}, routing_key={}, body={}]".format(RETRY_MAX, args.queue_name, method.routing_key, body))
+    if current_retry_count >= retry_max:
+        logger.error("Retry count exceeded!!({}). Discard Message = [exchange={}, routing_key={}, body={}]".format(retry_max, args.queue_name, method.routing_key, body))
         return
 
     props = pika.BasicProperties(
@@ -58,24 +58,9 @@ def callback(channel, method, properties, body):
     global store
 
     logger.debug("receive '{}({})'".format(method.routing_key, method.delivery_tag))
+
     try:
-        # replace delimiter in topic mqtt/amqp.
-        topic = method.routing_key
-        source_id = topic.replace("/", "_").replace(".", "_")
-        payload = str(body.decode('utf-8'))
-
-        if source_id in specified_types.keys():
-            spec_types = specified_types[source_id]
-        else:
-            spec_types = {}
-
-        (columns, types, values_list) = d2c.data_string2type_value(payload, specified_types=spec_types, tz_str=TZ_STR)
-
-        serialized = dbms.serialize_schema(columns, types, source_id)
-        data_table_name = dbms.get_table_name_with_insert_if_new_schema(client, store, source_id, columns, types, serialized, schema_cache)
-        dbms.insert_data(client, data_table_name, columns, values_list)
-
-        logger.debug(serialized)
+        insert_data(method, body, schema_cache, store, logger, tz_str=TZ_STR)
 
     except Exception as e:
         logger.error(e, exc_info=e)
@@ -87,12 +72,33 @@ def callback(channel, method, properties, body):
             logger.error(f"Table '{ m.group(1) }' is renamed? Update schema table cache.")
             schema_cache = store.load_all_schemas()
 
-        send_retry(channel, method, properties, body)
+        send_retry(channel, method, properties, body, logger, RETRY_MAX)
 
     finally:
         channel.basic_ack(delivery_tag=method.delivery_tag)
         logger.debug("return basic_ack '{}({})'".format(method.routing_key, method.delivery_tag))
 
+
+def insert_data(method, body, schema_cache, store, logger, tz_str):
+    # replace delimiter in topic mqtt/amqp.
+    topic = method.routing_key
+    source_id = topic.replace("/", "_").replace(".", "_")
+    payload = str(body.decode('utf-8'))
+
+    if source_id in specified_types.keys():
+        spec_types = specified_types[source_id]
+    else:
+        spec_types = {}
+
+    (columns, types, values_list) = d2c.data_string2type_value(payload, specified_types=spec_types, tz_str=tz_str)
+
+    serialized = dbms.serialize_schema(columns, types, source_id)
+    data_table_name = dbms.get_table_name_with_insert_if_new_schema(client, store, source_id, columns, types, serialized, schema_cache)
+    dbms.insert_data(client, data_table_name, columns, values_list)
+
+    logger.debug(serialized)
+
+# --------------------------------------------------------------------------------------------
 
 # initialize rabbitmq
 connection = pika.BlockingConnection(pika.ConnectionParameters(host=MQ_HOST, port=MQ_POST))

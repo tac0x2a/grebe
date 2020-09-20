@@ -1,6 +1,5 @@
 from br2dl import dbms_clickhouse
 
-
 def test_return_query_create_data_table():
     expected = 'CREATE TABLE IF NOT EXISTS `sample_data_table_001` (`sample_f` Nullable(Float64), `sample_b` Nullable(UInt8), __create_at DateTime64(3) DEFAULT now64(3), __uid UUID DEFAULT generateUUIDv4()) ENGINE = MergeTree PARTITION BY toYYYYMM(__create_at) ORDER BY (__create_at)'
     actual = dbms_clickhouse.query_create_data_table(("sample_f", "sample_b"), ("Float64", "UInt8"), "sample_data_table_001")

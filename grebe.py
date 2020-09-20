@@ -15,11 +15,11 @@ from br2dl.schema_store_clickhouse import SchemaStoreClickhouse
 
 
 class Grebe:
-    def __init__(self, channel, client, schema_store, specified_types, retry_max: int, tz_str: str, logger):
-        self.channel = channel
+    def __init__(self, client, schema_store, specified_types, resend_exchange_name, retry_max: int, tz_str: str, logger):
         self.client = client
         self.schema_store = schema_store
         self.specified_types = specified_types
+        self.resend_exchange_name = resend_exchange_name
         self.retry_max = retry_max
         self.tz_str = tz_str
         self.logger = logger
@@ -34,6 +34,7 @@ class Grebe:
         try:
             Grebe.__insert_data(
                 method, body,
+                self.client,
                 self.schema_store,
                 self.schema_cache,
                 self.specified_types,
@@ -54,6 +55,7 @@ class Grebe:
             self.__send_retry(
                 channel, method, properties, body,
                 self.retry_max,
+                self.resend_exchange_name,
                 self.logger
             )
 
@@ -62,7 +64,7 @@ class Grebe:
             self.logger.debug("return basic_ack '{}({})'".format(method.routing_key, method.delivery_tag))
 
     @classmethod
-    def __insert_data(cls, method, body, schema_store, schema_cache, specified_types, tz_str, logger):
+    def __insert_data(cls, method, body, client, schema_store, schema_cache, specified_types, tz_str, logger):
         # replace delimiter in topic mqtt/amqp.
         topic = method.routing_key
         source_id = topic.replace("/", "_").replace(".", "_")
@@ -82,7 +84,7 @@ class Grebe:
         logger.debug(serialized)
 
     @classmethod
-    def __send_retry(cls, channel, method, properties, body, retry_max, logger):
+    def __send_retry(cls, channel, method, properties, body, retry_max, resend_exchange_name, logger):
         RetryCountKey = "x-grebe-retry-count"
 
         current_retry_count = 0
@@ -91,14 +93,14 @@ class Grebe:
             current_retry_count = int(properties.headers.get(RetryCountKey))
 
         if current_retry_count >= retry_max:
-            logger.error("Retry count exceeded!!({}). Discard Message = [exchange={}, routing_key={}, body={}]".format(retry_max, args.queue_name, method.routing_key, body))
+            logger.error("Retry count exceeded!!({}). Discard Message = [exchange={}, routing_key={}, body={}]".format(retry_max, resend_exchange_name, method.routing_key, body))
             return
 
         props = pika.BasicProperties(
             headers={RetryCountKey: current_retry_count + 1}
         )
-        logger.debug("Re-sending [exchange={}, routing_key={}, props={}, body={}]".format(args.queue_name, method.routing_key, props, body))
-        channel.basic_publish(exchange=args.queue_name, routing_key=method.routing_key, properties=props, body=body)
+        logger.debug("Re-sending [exchange={}, routing_key={}, props={}, body={}]".format(resend_exchange_name, method.routing_key, props, body))
+        channel.basic_publish(exchange=resend_exchange_name, routing_key=method.routing_key, properties=props, body=body)
         logger.warning("Re-send complete. ({})".format(current_retry_count + 1))
 
 
@@ -149,7 +151,7 @@ if __name__ == '__main__':
         schema_file = os.path.join(SCHEMA_DIR, f"schema_db_{DB_HOST}_{DB_PORT}.yml")
         store = SchemaStoreYAML(schema_file)
 
-    grebe = Grebe(channel, client, store, specified_types, RETRY_MAX, TZ_STR, logger)
+    grebe = Grebe(client, store, specified_types, MQ_QNAME, RETRY_MAX, TZ_STR, logger)
 
     def callback(channel, method, properties, body):
         grebe.callback(channel, method, properties, body)

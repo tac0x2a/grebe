@@ -32,7 +32,7 @@ class Grebe:
         self.logger.debug("receive '{}({})'".format(method.routing_key, method.delivery_tag))
 
         try:
-            Grebe.__insert_data(
+            Grebe.insert_data(
                 method, body,
                 self.client,
                 self.schema_store,
@@ -41,18 +41,18 @@ class Grebe:
                 self.tz_str,
                 self.logger
             )
-
         except Exception as e:
             self.logger.error(e, exc_info=e)
             self.logger.error("Consume failed '{}'. retrying...".format(method.routing_key))
 
-            import re
-            m = re.search("DB::Exception: Table (.+) doesn't exist..", e.message)
-            if m:
-                self.logger.error(f"Table '{ m.group(1) }' is renamed? Update schema table cache.")
-                self.schema_cache = store.load_all_schemas()
+            if hasattr(e, 'message'):
+                import re
+                m = re.search("DB::Exception: Table (.+) doesn't exist..", e.message)
+                if m:
+                    self.logger.error(f"Table '{ m.group(1) }' is renamed? Update schema table cache.")
+                    self.schema_cache = store.load_all_schemas()
 
-            self.__send_retry(
+            Grebe.send_retry(
                 channel, method, properties, body,
                 self.retry_max,
                 self.resend_exchange_name,
@@ -64,7 +64,7 @@ class Grebe:
             self.logger.debug("return basic_ack '{}({})'".format(method.routing_key, method.delivery_tag))
 
     @classmethod
-    def __insert_data(cls, method, body, client, schema_store, schema_cache, specified_types, tz_str, logger):
+    def insert_data(cls, method, body, client, schema_store, schema_cache, specified_types, tz_str, logger):
         # replace delimiter in topic mqtt/amqp.
         topic = method.routing_key
         source_id = topic.replace("/", "_").replace(".", "_")
@@ -84,7 +84,7 @@ class Grebe:
         logger.debug(serialized)
 
     @classmethod
-    def __send_retry(cls, channel, method, properties, body, retry_max, resend_exchange_name, logger):
+    def send_retry(cls, channel, method, properties, body, retry_max, resend_exchange_name, logger):
         RetryCountKey = "x-grebe-retry-count"
 
         current_retry_count = 0

@@ -1,9 +1,22 @@
+from clickhouse_driver import Client
+from clickhouse_driver.errors import ServerException, ErrorCodes
 
 from collections import OrderedDict
 import re
 import json
 import logging
 logger = logging.getLogger("dbms_clickhouse")
+
+
+class TableNotFoundException(Exception):
+    def __init__(self, message, table_name, nested=None):
+        self.message = message
+        self.table_name = table_name
+        self.nested = nested
+
+
+def dbms_client(db_host, db_port):
+    return Client(db_host, db_port)
 
 
 # ---------------------------------------------------------------------
@@ -94,7 +107,14 @@ def insert_data(client, data_table_name, columns, values_list):
     logger.debug(f"Values {values_list}")
 
     query = query_insert_data_table_without_value(columns, data_table_name)
-    client.execute(query, values_list)
+
+    try:
+        client.execute(query, values_list)
+    except ServerException as e:
+        if e.code == ErrorCodes.UNKNOWN_TABLE:
+            raise TableNotFoundException("Table is not found", data_table_name, nested=e)
+        else:
+            raise e
 
 
 def escape_symbol(symbol: str):

@@ -4,12 +4,13 @@ import pika
 import yaml
 import os
 
-from clickhouse_driver import Client
+
 from lakeweed import clickhouse as d2c
 
 from br2dl import logger
 from br2dl import parse_args as pa
 from br2dl import dbms_clickhouse as dbms
+from br2dl.dbms_clickhouse import dbms_client, TableNotFoundException
 from br2dl.schema_store_yaml import SchemaStoreYAML
 from br2dl.schema_store_clickhouse import SchemaStoreClickhouse
 
@@ -41,17 +42,21 @@ class Grebe:
                 self.tz_str,
                 self.logger
             )
+        except TableNotFoundException as e:
+            self.logger.error(f"Table '{ e.table_name }' is renamed? Update schema table cache.")
+            self.schema_cache = self.schema_store.load_all_schemas()
+
+            self.logger.error("Consume failed '{}'. retrying...".format(method.routing_key))
+            Grebe.send_retry(
+                channel, method, properties, body,
+                self.retry_max,
+                self.resend_exchange_name,
+                self.logger
+            )
+
         except Exception as e:
             self.logger.error(e, exc_info=e)
             self.logger.error("Consume failed '{}'. retrying...".format(method.routing_key))
-
-            if hasattr(e, 'message'):
-                import re
-                m = re.search("DB::Exception: Table (.+) doesn't exist..", e.message)
-                if m:
-                    self.logger.error(f"Table '{ m.group(1) }' is renamed? Update schema table cache.")
-                    self.schema_cache = store.load_all_schemas()
-
             Grebe.send_retry(
                 channel, method, properties, body,
                 self.retry_max,
@@ -131,7 +136,7 @@ if __name__ == '__main__':
     logger.info("RabbitMQ connected({}:{})".format(MQ_HOST, MQ_POST))
 
     # initialize clickhouse
-    client = Client(DB_HOST, DB_PORT)
+    client = dbms_client(DB_HOST, DB_PORT)
     logger.info("Clickhouse connected({}:{})".format(DB_HOST, DB_PORT))
 
     # Loading specified type file

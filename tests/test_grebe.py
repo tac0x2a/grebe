@@ -1,9 +1,9 @@
 
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, call
 
 from grebe import Grebe
-
+from br2dl.dbms_clickhouse import TableNotFoundException
 
 @pytest.fixture(scope='function', autouse=True)
 def mocked_grebe():
@@ -46,6 +46,31 @@ class TestCallBack():
                 channel, method, properties, body = mocked_callback_args
                 grebe.callback(channel, method, properties, body)
                 mock_send_retry.assert_called_once_with(channel, method, properties, body, 3, 'exchange_name', logger)
+
+    def test_update_schema_cache_if_raise_some_exception(self, mocked_grebe, mocked_callback_args):
+        (client, schema_store, logger) = mocked_grebe
+        grebe = Grebe(client, schema_store, {}, 'exchange_name', 3, "UTC", logger)
+
+        with patch('grebe.Grebe.insert_data') as mock_insert_data:
+            mock_insert_data.side_effect = Exception("Unknown Exception!!")
+            channel, method, properties, body = mocked_callback_args
+            grebe.callback(channel, method, properties, body)
+
+            expected = [call.load_all_schemas()]
+            assert schema_store.method_calls == expected
+
+    def test_update_schema_cache_if_Table_not_found(self, mocked_grebe, mocked_callback_args):
+        (client, schema_store, logger) = mocked_grebe
+        grebe = Grebe(client, schema_store, {}, 'exchange_name', 3, "UTC", logger)
+
+        with patch('grebe.Grebe.insert_data') as mock_insert_data:
+            mock_insert_data.side_effect = TableNotFoundException("Table is not found", 'table_name')
+            channel, method, properties, body = mocked_callback_args
+            grebe.callback(channel, method, properties, body)
+
+            expected = [call.load_all_schemas(), call.load_all_schemas()]
+            assert schema_store.method_calls == expected
+
 
     def test_dbms_insert_data_is_called(self, mocked_grebe, mocked_callback_args):
         (client, schema_store, logger) = mocked_grebe

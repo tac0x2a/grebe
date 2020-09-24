@@ -1,4 +1,4 @@
-from br2dl.schema_store_clickhouse import SchemaStoreClickhouse as sc
+from grebe.schema_store_clickhouse import SchemaStoreClickhouse as sc
 
 # ---------------------------------------------------------------------
 

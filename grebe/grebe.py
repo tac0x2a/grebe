@@ -2,8 +2,8 @@ import pika
 
 from lakeweed import clickhouse as d2c
 
-from br2dl import dbms_clickhouse as dbms
-from br2dl.dbms_clickhouse import TableNotFoundException
+from . import dbms_clickhouse as dbms
+from .dbms_clickhouse import TableNotFoundException
 
 
 class Grebe:

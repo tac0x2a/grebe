@@ -2,8 +2,9 @@
 import pytest
 from unittest.mock import MagicMock, patch, call
 
-from grebe import Grebe
-from br2dl.dbms_clickhouse import TableNotFoundException
+from grebe.grebe import Grebe
+from grebe.dbms_clickhouse import TableNotFoundException
+
 
 @pytest.fixture(scope='function', autouse=True)
 def mocked_grebe():
@@ -29,7 +30,7 @@ class TestCallBack():
         schema_store.load_all_schemas.return_value = {}
         grebe = Grebe(client, schema_store, {}, 'exchange_name', 3, "UTC", logger)
 
-        with patch('grebe.Grebe.insert_data') as mock_insert_data:
+        with patch('grebe.grebe.Grebe.insert_data') as mock_insert_data:
             channel, method, properties, body = mocked_callback_args
             grebe.callback(channel, method, properties, body)
             mock_insert_data.assert_called_once_with(method, body, client, schema_store, {}, {}, "UTC", logger)
@@ -39,10 +40,10 @@ class TestCallBack():
         schema_store.load_all_schemas.return_value = {}
         grebe = Grebe(client, schema_store, {}, 'exchange_name', 3, "UTC", logger)
 
-        with patch('grebe.Grebe.insert_data') as mock_insert_data:
+        with patch('grebe.grebe.Grebe.insert_data') as mock_insert_data:
             mock_insert_data.side_effect = Exception('Unknown Exception!!')
 
-            with patch('grebe.Grebe.send_retry') as mock_send_retry:
+            with patch('grebe.grebe.Grebe.send_retry') as mock_send_retry:
                 channel, method, properties, body = mocked_callback_args
                 grebe.callback(channel, method, properties, body)
                 mock_send_retry.assert_called_once_with(channel, method, properties, body, 3, 'exchange_name', logger)
@@ -51,7 +52,7 @@ class TestCallBack():
         (client, schema_store, logger) = mocked_grebe
         grebe = Grebe(client, schema_store, {}, 'exchange_name', 3, "UTC", logger)
 
-        with patch('grebe.Grebe.insert_data') as mock_insert_data:
+        with patch('grebe.grebe.Grebe.insert_data') as mock_insert_data:
             mock_insert_data.side_effect = Exception("Unknown Exception!!")
             channel, method, properties, body = mocked_callback_args
             grebe.callback(channel, method, properties, body)
@@ -63,14 +64,13 @@ class TestCallBack():
         (client, schema_store, logger) = mocked_grebe
         grebe = Grebe(client, schema_store, {}, 'exchange_name', 3, "UTC", logger)
 
-        with patch('grebe.Grebe.insert_data') as mock_insert_data:
+        with patch('grebe.grebe.Grebe.insert_data') as mock_insert_data:
             mock_insert_data.side_effect = TableNotFoundException("Table is not found", 'table_name')
             channel, method, properties, body = mocked_callback_args
             grebe.callback(channel, method, properties, body)
 
             expected = [call.load_all_schemas(), call.load_all_schemas()]
             assert schema_store.method_calls == expected
-
 
     def test_dbms_insert_data_is_called(self, mocked_grebe, mocked_callback_args):
         (client, schema_store, logger) = mocked_grebe
@@ -84,7 +84,7 @@ class TestCallBack():
         with patch('lakeweed.clickhouse.data_string2type_value') as lw:
             lw.return_value = (['Hello'], ['String'], [('World',)])
 
-            with patch('br2dl.dbms_clickhouse.insert_data') as insert_data:
+            with patch('grebe.dbms_clickhouse.insert_data') as insert_data:
                 insert_data.return_value
                 grebe.callback(channel, method, properties, body)
                 insert_data.assert_called_once_with(client, "source_001", ['Hello'], [('World',)])

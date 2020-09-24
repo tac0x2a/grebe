@@ -5,7 +5,7 @@ LABEL Description="Grebe is forwarder Data-like string message from RabbitMQ to 
 
 RUN mkdir /grebe
 ADD README.md grebe.py requirements.txt /grebe/
-ADD br2dl /grebe/br2dl
+ADD grebe /grebe/grebe
 WORKDIR /grebe
 
 RUN apt-get update && apt-get -y upgrade \

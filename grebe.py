@@ -4,12 +4,12 @@ import pika
 import yaml
 import os
 
-from br2dl.grebe import Grebe
-from br2dl import logger
-from br2dl import parse_args as pa
-from br2dl.dbms_clickhouse import dbms_client
-from br2dl.schema_store_yaml import SchemaStoreYAML
-from br2dl.schema_store_clickhouse import SchemaStoreClickhouse
+from grebe.grebe import Grebe
+from grebe import logger
+from grebe import parse_args as pa
+from grebe.dbms_clickhouse import dbms_client
+from grebe.schema_store_yaml import SchemaStoreYAML
+from grebe.schema_store_clickhouse import SchemaStoreClickhouse
 
 
 # --------------------------------------------------------------------------------------------

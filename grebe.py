@@ -4,13 +4,15 @@ import pika
 import yaml
 import os
 
+from concurrent import futures
+
 from grebe.grebe import Grebe
 from grebe import logger
 from grebe import parse_args as pa
 from grebe.dbms_clickhouse import dbms_client
 from grebe.schema_store_yaml import SchemaStoreYAML
 from grebe.schema_store_clickhouse import SchemaStoreClickhouse
-
+from grebe import api
 
 # --------------------------------------------------------------------------------------------
 if __name__ == '__main__':
@@ -21,6 +23,8 @@ if __name__ == '__main__':
     DB_HOST = args.dh
     DB_PORT = args.dp
     RETRY_MAX = args.retry_max_count
+    API_HOST = args.api_host
+    API_PORT = args.api_port
 
     SCHEMA_STORE = args.schema_store
     SCHEMA_DIR = args.local_schema_dir
@@ -65,6 +69,16 @@ if __name__ == '__main__':
         grebe.callback(channel, method, properties, body)
 
     # start cousuming
+    def run_webapi(channel):
+        if API_HOST:
+            logger.info("Web API is enabled.")
+            api.app.run(debug=False, host=API_HOST, port=API_PORT)
+        else:
+            logger.info("Web API is disabled..")
+
+    with futures.ThreadPoolExecutor(max_workers=1) as executor:
+        executor.submit(run_webapi, channel)
+
     logger.info("Consuming ...")
     channel.basic_consume(MQ_QNAME, callback)
     channel.start_consuming()

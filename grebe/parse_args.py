@@ -15,8 +15,7 @@ def parse_args():
     parser.add_argument('--type-file', help='File path to specified column types')
     parser.add_argument('--tz', help='Timezone string will be used as default offset in parsing source string if it has no offset')
 
-    parser.add_argument('--api-host', help='Host address of grebe to enable Web API. It is disabled if this is not provided.', default=None)
-    parser.add_argument('--api-port', help='Port number of grebe Web API. This effect only Web API is enabled.', type=int, default=8888)
+    parser.add_argument('--api-port', help='Port number of grebe Web API. It is disabled if this is not provided.', type=int, default=None)
 
     parser.add_argument('--log-level', help='Log level', choices=['DEBUG', 'INFO', 'WARN', 'ERROR'], default='INFO')
     parser.add_argument('--log-format', help='Log format by \'logging\' package', default='[%(levelname)s] %(asctime)s | %(pathname)s(L%(lineno)s) | %(message)s')  # Optional

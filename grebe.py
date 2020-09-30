@@ -23,7 +23,6 @@ if __name__ == '__main__':
     DB_HOST = args.dh
     DB_PORT = args.dp
     RETRY_MAX = args.retry_max_count
-    API_HOST = args.api_host
     API_PORT = args.api_port
 
     SCHEMA_STORE = args.schema_store
@@ -70,11 +69,13 @@ if __name__ == '__main__':
 
     # start cousuming
     def run_webapi(channel):
-        if API_HOST:
+        if API_PORT:
             logger.info("Web API is enabled.")
-            api.app.run(debug=False, host=API_HOST, port=API_PORT)
+            api._args = vars(args)
+            api._grebe = grebe
+            api.app.run(host='0.0.0.0', port=API_PORT)
         else:
-            logger.info("Web API is disabled..")
+            logger.info("Web API is disabled.")
 
     with futures.ThreadPoolExecutor(max_workers=1) as executor:
         executor.submit(run_webapi, channel)

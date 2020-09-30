@@ -16,8 +16,7 @@ class Grebe:
         self.tz_str = tz_str
         self.logger = logger
 
-        self.schema_cache = self.schema_store.load_all_schemas()
-        self.logger.info(f"Load {len(self.schema_cache)} schemas from {self.schema_store}")
+        self.reload_schema()
         self.logger.info(f"Schemas: {[s for s in self.schema_cache.values()]}")
 
     def callback(self, channel, method, properties, body):
@@ -35,7 +34,7 @@ class Grebe:
             )
         except TableNotFoundException as e:
             self.logger.error(f"Table '{ e.table_name }' is renamed? Update schema table cache.")
-            self.schema_cache = self.schema_store.load_all_schemas()
+            self.reload_schema()
 
             self.logger.error("Consume failed '{}'. retrying...".format(method.routing_key))
             Grebe.send_retry(
@@ -58,6 +57,11 @@ class Grebe:
         finally:
             channel.basic_ack(delivery_tag=method.delivery_tag)
             self.logger.debug("return basic_ack '{}({})'".format(method.routing_key, method.delivery_tag))
+
+    def reload_schema(self):
+        self.schema_cache = self.schema_store.load_all_schemas()
+        self.logger.info(f"Load {len(self.schema_cache)} schemas from {self.schema_store}")
+        return {'length': len(self.schema_cache), 'store': str(type(self.schema_store))}
 
     @classmethod
     def insert_data(cls, method, body, client, schema_store, schema_cache, specified_types, tz_str, logger):

@@ -68,7 +68,7 @@ if __name__ == '__main__':
         grebe.callback(channel, method, properties, body)
 
     # start cousuming
-    def run_webapi(channel):
+    def run_webapi():
         if API_PORT:
             logger.info("Web API is enabled.")
             api._args = vars(args)
@@ -77,9 +77,14 @@ if __name__ == '__main__':
         else:
             logger.info("Web API is disabled.")
 
-    with futures.ThreadPoolExecutor(max_workers=1) as executor:
-        executor.submit(run_webapi, channel)
+    def start_consuming():
+        logger.info("Consuming ...")
+        channel.basic_consume(MQ_QNAME, callback)
+        channel.start_consuming()
 
-    logger.info("Consuming ...")
-    channel.basic_consume(MQ_QNAME, callback)
-    channel.start_consuming()
+    with futures.ThreadPoolExecutor(max_workers=2) as executor:
+        future_list = [
+            executor.submit(run_webapi),
+            executor.submit(start_consuming)
+        ]
+        futures.as_completed(future_list)

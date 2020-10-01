@@ -42,6 +42,7 @@ usage: grebe.py [-h] [-mh MH] [-mp MP] [-dh DH] [-dp DP]
                 [--local-schema-dir LOCAL_SCHEMA_DIR]
                 [--type-file TYPE_FILE]
                 [--tz TZ]
+                [--api-port API_PORT]
                 [--log-level {DEBUG,INFO,WARN,ERROR}]
                 [--log-format LOG_FORMAT] [--log-file LOG_FILE]
                 [--log-file-count LOG_FILE_COUNT]
@@ -67,6 +68,7 @@ optional arguments:
   --type-file TYPE_FILE
                         File path to specified column types
   --tz TZ               Timezone string will be used as default offset in parsing source string if it has no offset
+  --api-port API_PORT   Port number of grebe Web API. It is disabled if this is not provided.
   --log-level {DEBUG,INFO,WARN,ERROR}
                         Log level
   --log-format LOG_FORMAT
@@ -77,8 +79,7 @@ optional arguments:
   --log-file-size LOG_FILE_SIZE
                         Size of each log file
   --retry-max-count RETRY_MAX_COUNT
-                        Max count of retry to processing. Message is discard
-                        when exceeded max count.
+                        Max count of retry to processing. Message is discard when exceeded max count.
 ```
 
 ## Specified type file format
@@ -101,6 +102,74 @@ weather:
 ```
 
 This feature is provided by [Lake Weed](https://github.com/tac0x2a/lake_weed).
+
+## Web API
+Gerebe provide web api when `--api-port` argument is specified as api port number.
+
+When you launch with `--api-port 8888`, you can access  `http://localhost:8888/` and will be shown `Grebe is running.` message.
+
+### `/` : `GET`
+Grebe just show `Grebe is running.` message.
+
+Example: `(200)`
+```
+Grebe is running.
+```
+
+
+### `/args` : `GET`
+Command line argument as json format will be shown.
+
+Example: `(200)`
+```json
+{"api_port":8888,"dh":"localhost","dp":9000,"local_schema_dir":"schemas","log_file":null,"log_file_count":1000,"log_file_size":1000000,"log_format":"[%(levelname)s] %(asctime)s | %(pathname)s(L%(lineno)s) | %(message)s","log_level":"INFO","mh":"localhost","mp":5672,"queue_name":"nayco","retry_max_count":3,"schema_store":"rdb","type_file":null,"tz":"Asia/Tokyo"}
+```
+
+### `/schema_cache` : `GET`
+Current schema cache on Grebe.
+Schema chash is correspondance Source AMQP topic name and schema of message to destination table name.
+
+Example: There are 2 schema_caches. `(200)`
+```json
+[
+  {
+    "schema": {
+      "status": "String"
+    },
+    "source": "rabbitmq_stat_aliveness-test",
+    "table": "rabbitmq_stat_aliveness-test_001"
+  },
+  {
+    "schema": {
+      "arguments": "String",
+      "auto_delete": "UInt8",
+      "durable": "UInt8",
+      "internal": "UInt8",
+      "name": "String",
+      "type": "String",
+      "user_who_performed_action": "String",
+      "vhost": "String"
+    },
+    "source": "rabbitmq_stat_exchanges",
+    "table": "rabbitmq_stat_exchanges_001"
+  }
+]
+```
+
+### `/schema_cache/reload` : `GET`
+Reload schema cache from schema source.
+
+Example: Success to reload all schemas. `(200)`
+```json
+{"result":"Success","schema_count":66,"store":"<class 'grebe.schema_store_clickhouse.SchemaStoreClickhouse'>"}
+```
+
+
+Example: Failed reload schemas. `(500)`
+```json
+{"result":"Failed","stack_trace":"...traceback.format_exc()..."}
+```
+
 
 
 ## Deploy docker image

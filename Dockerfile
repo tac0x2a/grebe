@@ -47,6 +47,9 @@ ENV TYPE_FILE /type.yml
 # File path to specified column types
 ENV TZ_STR "UTC"
 
+# Port number of grebe Web API. It is disabled if this value is 0 or not provided.
+ENV API_PORT 0
+
 # Schema DB directory path when schema-sotre is local
 ENV LOCAL_SCHEMA_DIR /schemas
 
@@ -80,6 +83,7 @@ ENTRYPOINT python ./grebe.py ${MQ_QNAME} \
     --local-schema-dir ${LOCAL_SCHEMA_DIR}\
     --type-file ${TYPE_FILE}\
     --tz "${TZ_STR}" \
+    --api-port ${API_PORT} \
     --log-level ${LOG_LEVEL} \
     --log-file /logs/`cat /etc/hostname`/${LOG_FILE} \
     --log-format "${LOG_FORMAT}" \

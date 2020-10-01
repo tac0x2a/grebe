@@ -39,11 +39,11 @@ if __name__ == '__main__':
     channel = connection.channel()
 
     channel.queue_declare(queue=MQ_QNAME)
-    logger.info("RabbitMQ connected({}:{})".format(MQ_HOST, MQ_POST))
+    logger.info(f"RabbitMQ connected({MQ_HOST}:{MQ_POST})")
 
     # initialize clickhouse
     client = dbms_client(DB_HOST, DB_PORT)
-    logger.info("Clickhouse connected({}:{})".format(DB_HOST, DB_PORT))
+    logger.info(f"Clickhouse connected({DB_HOST}:{DB_PORT})")
 
     # Loading specified type file
     specified_types = {}

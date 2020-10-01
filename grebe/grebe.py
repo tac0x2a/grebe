@@ -61,7 +61,7 @@ class Grebe:
     def reload_schema(self):
         self.schema_cache = self.schema_store.load_all_schemas()
         self.logger.info(f"Load {len(self.schema_cache)} schemas from {self.schema_store}")
-        return {'length': len(self.schema_cache), 'store': str(type(self.schema_store))}
+        return {'schema_count': len(self.schema_cache), 'store': str(type(self.schema_store))}
 
     @classmethod
     def insert_data(cls, method, body, client, schema_store, schema_cache, specified_types, tz_str, logger):

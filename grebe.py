@@ -57,7 +57,9 @@ if __name__ == '__main__':
 
     # Load Schema
     if SCHEMA_STORE == 'rdb':
-        store = SchemaStoreClickhouse(client)
+        schema_store_client = dbms_client(DB_HOST, DB_PORT)
+        logger.info(f"Clickhouse connected({DB_HOST}:{DB_PORT}) for schema store")
+        store = SchemaStoreClickhouse(schema_store_client)
     else:
         schema_file = os.path.join(SCHEMA_DIR, f"schema_db_{DB_HOST}_{DB_PORT}.yml")
         store = SchemaStoreYAML(schema_file)

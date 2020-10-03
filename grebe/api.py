@@ -41,3 +41,24 @@ def schema_cache_reload():
             'stack_trace': traceback.format_exc()
         }
         return jsonify(result), 500
+
+
+@app.route('/metadata_cache')
+def metadata_cache():
+    res = [{'source_id': s, 'metadata': m} for s, m in _grebe.metadata_cache.items()]
+    return jsonify(res), 200
+
+
+@app.route('/metadata_cache/reload')
+def metadata_cache_reload():
+    try:
+        result = _grebe.reload_metadata()
+        result['result'] = 'Success'
+        return jsonify(result), 200
+
+    except Exception:
+        result = {
+            'result': 'Failed',
+            'stack_trace': traceback.format_exc()
+        }
+        return jsonify(result), 500

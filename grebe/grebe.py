@@ -19,14 +19,8 @@ class Grebe:
         self.reload_schema()
         self.logger.info(f"Schemas: {[s for s in self.schema_cache.values()]}")
 
-        meta = self.meta_store.load_all_meta_data()
-        logger.info(f"Loaded meta data: {meta}")
+        self.reload_metadata()
 
-        self.specified_types_cache = {source_id: body['types'] for source_id, body in meta.items() if 'types' in body}
-        logger.info(f"Specified Types cache: {self.specified_types_cache}")
-
-        for s, b in meta.items():
-            logger.info(f"{s}:{b}")
 
     def callback(self, channel, method, properties, body):
         self.logger.debug("receive '{}({})'".format(method.routing_key, method.delivery_tag))
@@ -71,6 +65,15 @@ class Grebe:
         self.schema_cache = self.schema_store.load_all_schemas()
         self.logger.info(f"Load {len(self.schema_cache)} schemas from {self.schema_store}")
         return {'schema_count': len(self.schema_cache), 'store': str(type(self.schema_store))}
+
+    def reload_metadata(self):
+        self.metadata_cache = self.meta_store.load_all_meta_data()
+        self.logger.info(f"Loaded meta data: {self.metadata_cache}")
+
+        self.specified_types_cache = {source_id: body['types'] for source_id, body in self.metadata_cache.items() if 'types' in body}
+        self.logger.info(f"Specified Types cache: {self.specified_types_cache}")
+
+        return {'metadata': str(type(self.meta_store))}
 
     @classmethod
     def insert_data(cls, method, body, client, schema_store, schema_cache, specified_types, tz_str, logger):

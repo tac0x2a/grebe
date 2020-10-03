@@ -102,9 +102,8 @@ General
   ...
 ```
 
-### Specified types
+#### Specified types Example
 
-Example
 ```yml
 weather:
   types:
@@ -185,6 +184,49 @@ Example: Failed reload schemas. `(500)`
 {"result":"Failed","stack_trace":"...traceback.format_exc()..."}
 ```
 
+### `/source_settings_cache` : `GET`
+Current source_settings cache on Grebe.
+`source_settings` chash is settings of source(AMQP topic name).
+
+Example: There are 2 schema_caches. `(200)`
+```json
+[
+  {
+    "source_id": "weather",
+    "source_settings": {
+      "types": {
+        "city": "string",
+        "city_code": "int",
+        "location__latitude": "double",
+        "location__longitude": "double",
+        "temperature": "double"
+      }
+    }
+  },
+  {
+    "source_id": "rabbitmq_stat_aliveness-test",
+    "source_settings": {
+      "types": {
+        "now": "datetime",
+        "status": "string"
+      }
+    }
+  }
+]
+```
+
+### `/source_settings_cache/reload` : `GET`
+Reload source_settings.
+
+Example: Success to reload all source settings. `(200)`
+```json
+{"result":"Success","store":"<class 'grebe.source_setting_store_clickhouse.SourceSettingStoreClickhouse'>"}
+```
+
+Example: Failed to reload. `(500)`
+```json
+{"result":"Failed","stack_trace":"...traceback.format_exc()..."}
+```
 
 
 ## Deploy docker image

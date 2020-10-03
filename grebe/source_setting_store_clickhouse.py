@@ -1,3 +1,4 @@
+import json
 from . import dbms_clickhouse as ch
 
 
@@ -8,7 +9,8 @@ class SourceSettingStoreClickhouse():
         self.__create_table(client)
 
     def load_all_source_settings(self):
-        return self.__select_all(self.client)
+        select_result = self.__select_all(self.client)
+        return {src: json.loads(setting_str) for src, setting_str in select_result.items()}
 
     def store_source_setting(self, source_id, source_setting):
         # Todo upsert.

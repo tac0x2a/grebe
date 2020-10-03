@@ -12,6 +12,7 @@ from grebe.dbms_clickhouse import dbms_client
 from grebe.schema_store_yaml import SchemaStoreYAML
 from grebe.schema_store_clickhouse import SchemaStoreClickhouse
 from grebe.meta_store_yaml import MetaStoreYAML
+from grebe.meta_store_clickhouse import MetaStoreClickhouse
 from grebe import api
 
 # --------------------------------------------------------------------------------------------
@@ -62,9 +63,8 @@ if __name__ == '__main__':
         meta_store = MetaStoreYAML(meta_file, logger)
     else:
         logger.info("MetaStore: DB")
-        # Todo change to db
-        meta_file = Path(LOCAL_META_FILE)
-        meta_store = MetaStoreYAML(meta_file, logger)
+        meta_store_client = dbms_client(DB_HOST, DB_PORT)
+        meta_store = MetaStoreClickhouse(meta_store_client, "__metastore", logger)
 
     grebe = Grebe(client, schema_store, meta_store, MQ_QNAME, RETRY_MAX, TZ_STR, logger)
 

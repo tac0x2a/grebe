@@ -7,10 +7,10 @@ from .dbms_clickhouse import TableNotFoundException
 
 
 class Grebe:
-    def __init__(self, client, schema_store, specified_types, resend_exchange_name, retry_max: int, tz_str: str, logger):
+    def __init__(self, client, schema_store, source_settings_store, resend_exchange_name, retry_max: int, tz_str: str, logger):
         self.client = client
         self.schema_store = schema_store
-        self.specified_types = specified_types
+        self.source_settings_store = source_settings_store
         self.resend_exchange_name = resend_exchange_name
         self.retry_max = retry_max
         self.tz_str = tz_str
@@ -18,6 +18,8 @@ class Grebe:
 
         self.reload_schema()
         self.logger.info(f"Schemas: {[s for s in self.schema_cache.values()]}")
+
+        self.reload_source_settings()
 
     def callback(self, channel, method, properties, body):
         self.logger.debug("receive '{}({})'".format(method.routing_key, method.delivery_tag))
@@ -28,7 +30,7 @@ class Grebe:
                 self.client,
                 self.schema_store,
                 self.schema_cache,
-                self.specified_types,
+                self.specified_types_cache,
                 self.tz_str,
                 self.logger
             )
@@ -62,6 +64,15 @@ class Grebe:
         self.schema_cache = self.schema_store.load_all_schemas()
         self.logger.info(f"Load {len(self.schema_cache)} schemas from {self.schema_store}")
         return {'schema_count': len(self.schema_cache), 'store': str(type(self.schema_store))}
+
+    def reload_source_settings(self):
+        self.source_settings_cache = self.source_settings_store.load_all_source_settings()
+        self.logger.info(f"Loaded source_settings: {self.source_settings_cache}")
+
+        self.specified_types_cache = {source_id: body['types'] for source_id, body in self.source_settings_cache.items() if 'types' in body}
+        self.logger.info(f"Specified Types cache: {self.specified_types_cache}")
+
+        return {'store': str(type(self.source_settings_store))}
 
     @classmethod
     def insert_data(cls, method, body, client, schema_store, schema_cache, specified_types, tz_str, logger):

@@ -40,6 +40,7 @@ $ ./grebe.py -h
 usage: grebe.py [-h] [-mh MH] [-mp MP] [-dh DH] [-dp DP]
                 [--schema-store {local,rdb}]
                 [--local-schema-dir LOCAL_SCHEMA_DIR]
+                [--local-source-settings-file LOCAL_SOURCE_SETTINGS_FILE]
                 [--type-file TYPE_FILE]
                 [--tz TZ]
                 [--api-port API_PORT]
@@ -65,8 +66,8 @@ optional arguments:
                         Schema store location
   --local-schema-dir LOCAL_SCHEMA_DIR
                         Schema DB directory path when schema-sotre is local
-  --type-file TYPE_FILE
-                        File path to specified column types
+  -local-source-settings-file LOCAL_SOURCE_SETTINGS_FILE
+                        Path to source settings as local file. If this parameter skipped, source setting will be create on DB
   --tz TZ               Timezone string will be used as default offset in parsing source string if it has no offset
   --api-port API_PORT   Port number of grebe Web API. It is disabled if this is not provided.
   --log-level {DEBUG,INFO,WARN,ERROR}
@@ -82,22 +83,35 @@ optional arguments:
                         Max count of retry to processing. Message is discard when exceeded max count.
 ```
 
-## Specified type file format
+This feature is provided by [Lake Weed](https://github.com/tac0x2a/lake_weed).
+
+
+## Settings each source
 
 General
 ```yml
-<source_id> :
-  <field_name> : <type>
-  <field_name> : <type>
+<source_id>:
+  types:
+    <field_name> : <type>
+    <field_name> : <type>
+
+<source_id>:
+  types:
+    <field_name> : <type>
+    <field_name> : <type>
   ...
 ```
 
-Example
+#### Specified types Example
+
 ```yml
 weather:
-  temperature : double
-  location__longitude : double
-  location__latitude  : double
+  types:
+    city: string
+    city_code: int
+    temperature : double
+    location__longitude : double
+    location__latitude  : double
   ...
 ```
 
@@ -122,7 +136,7 @@ Command line argument as json format will be shown.
 
 Example: `(200)`
 ```json
-{"api_port":8888,"dh":"localhost","dp":9000,"local_schema_dir":"schemas","log_file":null,"log_file_count":1000,"log_file_size":1000000,"log_format":"[%(levelname)s] %(asctime)s | %(pathname)s(L%(lineno)s) | %(message)s","log_level":"INFO","mh":"localhost","mp":5672,"queue_name":"nayco","retry_max_count":3,"schema_store":"rdb","type_file":null,"tz":"Asia/Tokyo"}
+{"api_port":8888,"dh":"localhost","dp":9000,"local_schema_dir":"schemas","local_source_settings_file":"","log_file":null,"log_file_count":1000,"log_file_size":1000000,"log_format":"[%(levelname)s] %(asctime)s | %(pathname)s(L%(lineno)s) | %(message)s","log_level":"INFO","mh":"localhost","mp":5672,"queue_name":"nayco","retry_max_count":3,"schema_store":"rdb","tz":"Asia/Tokyo"}
 ```
 
 ### `/schema_cache` : `GET`
@@ -170,6 +184,49 @@ Example: Failed reload schemas. `(500)`
 {"result":"Failed","stack_trace":"...traceback.format_exc()..."}
 ```
 
+### `/source_settings_cache` : `GET`
+Current source_settings cache on Grebe.
+`source_settings` chash is settings of source(AMQP topic name).
+
+Example: There are 2 schema_caches. `(200)`
+```json
+[
+  {
+    "source_id": "weather",
+    "source_settings": {
+      "types": {
+        "city": "string",
+        "city_code": "int",
+        "location__latitude": "double",
+        "location__longitude": "double",
+        "temperature": "double"
+      }
+    }
+  },
+  {
+    "source_id": "rabbitmq_stat_aliveness-test",
+    "source_settings": {
+      "types": {
+        "now": "datetime",
+        "status": "string"
+      }
+    }
+  }
+]
+```
+
+### `/source_settings_cache/reload` : `GET`
+Reload source_settings.
+
+Example: Success to reload all source settings. `(200)`
+```json
+{"result":"Success","store":"<class 'grebe.source_setting_store_clickhouse.SourceSettingStoreClickhouse'>"}
+```
+
+Example: Failed to reload. `(500)`
+```json
+{"result":"Failed","stack_trace":"...traceback.format_exc()..."}
+```
 
 
 ## Deploy docker image

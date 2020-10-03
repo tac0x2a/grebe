@@ -41,10 +41,10 @@ ENV DB_PORT  9000
 # Schema store location
 ENV SCHEMA_STORE local
 
-# File path to specified column types
-ENV TYPE_FILE /type.yml
+# Path to source settings file as local file. If this parameter skipped, source settings will be create on DB
+ENV LOCAL_SOURCE_SETTINGS_FILE ""
 
-# File path to specified column types
+# Timezone string will be used as default offset in parsing source string if it has no offset
 ENV TZ_STR "UTC"
 
 # Port number of grebe Web API. It is disabled if this value is 0 or not provided.
@@ -81,7 +81,7 @@ ENTRYPOINT python ./grebe.py ${MQ_QNAME} \
     -dh ${DB_HOST} -dp ${DB_PORT} \
     --schema-store ${SCHEMA_STORE}\
     --local-schema-dir ${LOCAL_SCHEMA_DIR}\
-    --type-file ${TYPE_FILE}\
+    --local-source-settings-file ${LOCAL_SOURCE_SETTINGS_FILE}\
     --tz "${TZ_STR}" \
     --api-port ${API_PORT} \
     --log-level ${LOG_LEVEL} \

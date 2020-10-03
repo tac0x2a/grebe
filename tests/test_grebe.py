@@ -10,8 +10,9 @@ from grebe.dbms_clickhouse import TableNotFoundException
 def mocked_grebe():
     client = MagicMock(name='client')
     schema_store = MagicMock(name='schema_store')
+    source_settings_store = MagicMock(name='source_settings_store')
     logger = MagicMock(name='logger')
-    return (client, schema_store, logger)
+    return (client, schema_store, source_settings_store, logger)
 
 
 @pytest.fixture(scope='function', autouse=True)
@@ -26,9 +27,9 @@ def mocked_callback_args():
 @pytest.mark.usefixtures("mocked_grebe", "mocked_callback_args")
 class TestCallBack():
     def test_insert_data_is_called(self, mocked_grebe, mocked_callback_args):
-        (client, schema_store, logger) = mocked_grebe
+        (client, schema_store, ss_store, logger) = mocked_grebe
         schema_store.load_all_schemas.return_value = {}
-        grebe = Grebe(client, schema_store, {}, 'exchange_name', 3, "UTC", logger)
+        grebe = Grebe(client, schema_store, ss_store, 'exchange_name', 3, "UTC", logger)
 
         with patch('grebe.grebe.Grebe.insert_data') as mock_insert_data:
             channel, method, properties, body = mocked_callback_args
@@ -36,9 +37,9 @@ class TestCallBack():
             mock_insert_data.assert_called_once_with(method, body, client, schema_store, {}, {}, "UTC", logger)
 
     def test_send_retry_is_called(self, mocked_grebe, mocked_callback_args):
-        (client, schema_store, logger) = mocked_grebe
+        (client, schema_store, ss_store, logger) = mocked_grebe
         schema_store.load_all_schemas.return_value = {}
-        grebe = Grebe(client, schema_store, {}, 'exchange_name', 3, "UTC", logger)
+        grebe = Grebe(client, schema_store, ss_store, 'exchange_name', 3, "UTC", logger)
 
         with patch('grebe.grebe.Grebe.insert_data') as mock_insert_data:
             mock_insert_data.side_effect = Exception('Unknown Exception!!')
@@ -49,8 +50,8 @@ class TestCallBack():
                 mock_send_retry.assert_called_once_with(channel, method, properties, body, 3, 'exchange_name', logger)
 
     def test_update_schema_cache_if_raise_some_exception(self, mocked_grebe, mocked_callback_args):
-        (client, schema_store, logger) = mocked_grebe
-        grebe = Grebe(client, schema_store, {}, 'exchange_name', 3, "UTC", logger)
+        (client, schema_store, ss_store, logger) = mocked_grebe
+        grebe = Grebe(client, schema_store, ss_store, 'exchange_name', 3, "UTC", logger)
 
         with patch('grebe.grebe.Grebe.insert_data') as mock_insert_data:
             mock_insert_data.side_effect = Exception("Unknown Exception!!")
@@ -61,8 +62,8 @@ class TestCallBack():
             assert schema_store.method_calls == expected
 
     def test_update_schema_cache_if_Table_not_found(self, mocked_grebe, mocked_callback_args):
-        (client, schema_store, logger) = mocked_grebe
-        grebe = Grebe(client, schema_store, {}, 'exchange_name', 3, "UTC", logger)
+        (client, schema_store, ss_store, logger) = mocked_grebe
+        grebe = Grebe(client, schema_store, ss_store, 'exchange_name', 3, "UTC", logger)
 
         with patch('grebe.grebe.Grebe.insert_data') as mock_insert_data:
             mock_insert_data.side_effect = TableNotFoundException("Table is not found", 'table_name')
@@ -73,8 +74,8 @@ class TestCallBack():
             assert schema_store.method_calls == expected
 
     def test_dbms_insert_data_is_called(self, mocked_grebe, mocked_callback_args):
-        (client, schema_store, logger) = mocked_grebe
-        grebe = Grebe(client, schema_store, {}, 'exchange_name', 3, "UTC", logger)
+        (client, schema_store, ss_store, logger) = mocked_grebe
+        grebe = Grebe(client, schema_store, ss_store, 'exchange_name', 3, "UTC", logger)
         grebe.__insert_data = MagicMock(name='__insert_data')
 
         channel, method, properties, body = mocked_callback_args

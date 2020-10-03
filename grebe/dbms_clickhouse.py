@@ -25,13 +25,16 @@ def query_create_data_table(columns, types, data_table_name):
 
     # Column is already Nullable with out array.
     for c, t in column_types_map.items():
+        if t is None:  # Todo this block is reached when not supported type is specified in source_settings store. Should be fix lake_weed.
+            logger.error(f"The column {c} type is None!")
+            continue
         if t.startswith("Array"):
             pattern = re.compile(r"Array\((.+)\)", re.IGNORECASE)
             inner_type_m = pattern.match(t)
             inner_type = inner_type_m.group(1)
             column_types_map[c] = f"Array(Nullable({inner_type}))"
         else:
-            column_types_map[c] = "Nullable({})".format(t)
+            column_types_map[c] = f"Nullable({t})"
 
     columns_def_string = ", ".join([f"`{escape_symbol(c)}` {t}" for c, t in column_types_map.items()])
     return f"CREATE TABLE IF NOT EXISTS `{escape_symbol(data_table_name)}` ({columns_def_string}, __create_at DateTime64(3) DEFAULT now64(3), __uid UUID DEFAULT generateUUIDv4()) ENGINE = MergeTree PARTITION BY toYYYYMM(__create_at) ORDER BY (__create_at)"

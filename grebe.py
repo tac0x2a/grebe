@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 
 import pika
-import yaml
 import os
-
+from pathlib import Path
 from concurrent import futures
 
 from grebe.grebe import Grebe
@@ -12,6 +11,8 @@ from grebe import parse_args as pa
 from grebe.dbms_clickhouse import dbms_client
 from grebe.schema_store_yaml import SchemaStoreYAML
 from grebe.schema_store_clickhouse import SchemaStoreClickhouse
+from grebe.source_setting_store_yaml import SourceSettingStoreYAML
+from grebe.source_setting_store_clickhouse import SourceSettingStoreClickhouse
 from grebe import api
 
 # --------------------------------------------------------------------------------------------
@@ -27,6 +28,7 @@ if __name__ == '__main__':
 
     SCHEMA_STORE = args.schema_store
     SCHEMA_DIR = args.local_schema_dir
+    LOCAL_SRC_SETTINGS_FILE = args.local_source_settings_file
 
     TZ_STR = args.tz
 
@@ -45,26 +47,26 @@ if __name__ == '__main__':
     client = dbms_client(DB_HOST, DB_PORT)
     logger.info(f"Clickhouse connected({DB_HOST}:{DB_PORT})")
 
-    # Loading specified type file
-    specified_types = {}
-    if args.type_file:
-        try:
-            with open(args.type_file, 'r') as tf:
-                specified_types = yaml.load(tf)
-                logger.info(f"Load specified types. {specified_types}")
-        except (FileNotFoundError, yaml.parser.ParserError, yaml.scanner.ScannerError) as e:
-            logger.warning(f"type-file load failed. ('{args.type_file}') ignored specified types. ({e})")
-
     # Load Schema
     if SCHEMA_STORE == 'rdb':
         schema_store_client = dbms_client(DB_HOST, DB_PORT)
         logger.info(f"Clickhouse connected({DB_HOST}:{DB_PORT}) for schema store")
-        store = SchemaStoreClickhouse(schema_store_client)
+        schema_store = SchemaStoreClickhouse(schema_store_client)
     else:
         schema_file = os.path.join(SCHEMA_DIR, f"schema_db_{DB_HOST}_{DB_PORT}.yml")
-        store = SchemaStoreYAML(schema_file)
+        schema_store = SchemaStoreYAML(schema_file)
 
-    grebe = Grebe(client, store, specified_types, MQ_QNAME, RETRY_MAX, TZ_STR, logger)
+    # Load SourceSetting store
+    if len(LOCAL_SRC_SETTINGS_FILE) > 0:
+        logger.info(f"SourceSettingStore: local at {LOCAL_SRC_SETTINGS_FILE}")
+        source_setting_file = Path(LOCAL_SRC_SETTINGS_FILE)
+        source_setting_store = SourceSettingStoreYAML(source_setting_file, logger)
+    else:
+        logger.info("SourceSettingStore: DB")
+        source_setting_store_client = dbms_client(DB_HOST, DB_PORT)
+        source_setting_store = SourceSettingStoreClickhouse(source_setting_store_client, "__source_settings", logger)
+
+    grebe = Grebe(client, schema_store, source_setting_store, MQ_QNAME, RETRY_MAX, TZ_STR, logger)
 
     def callback(channel, method, properties, body):
         grebe.callback(channel, method, properties, body)

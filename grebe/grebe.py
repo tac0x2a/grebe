@@ -7,10 +7,10 @@ from .dbms_clickhouse import TableNotFoundException
 
 
 class Grebe:
-    def __init__(self, client, schema_store, specified_types, resend_exchange_name, retry_max: int, tz_str: str, logger):
+    def __init__(self, client, schema_store, meta_store, resend_exchange_name, retry_max: int, tz_str: str, logger):
         self.client = client
         self.schema_store = schema_store
-        self.specified_types = specified_types
+        self.meta_store = meta_store
         self.resend_exchange_name = resend_exchange_name
         self.retry_max = retry_max
         self.tz_str = tz_str
@@ -18,6 +18,15 @@ class Grebe:
 
         self.reload_schema()
         self.logger.info(f"Schemas: {[s for s in self.schema_cache.values()]}")
+
+        meta = self.meta_store.load_all_meta_data()
+        logger.info(f"Loaded meta data: {meta}")
+
+        self.specified_types_cache = {source_id: body['types'] for source_id, body in meta.items() if 'types' in body}
+        logger.info(f"Specified Types cache: {self.specified_types_cache}")
+
+        for s, b in meta.items():
+            logger.info(f"{s}:{b}")
 
     def callback(self, channel, method, properties, body):
         self.logger.debug("receive '{}({})'".format(method.routing_key, method.delivery_tag))
@@ -28,7 +37,7 @@ class Grebe:
                 self.client,
                 self.schema_store,
                 self.schema_cache,
-                self.specified_types,
+                self.specified_types_cache,
                 self.tz_str,
                 self.logger
             )

@@ -82,22 +82,36 @@ optional arguments:
                         Max count of retry to processing. Message is discard when exceeded max count.
 ```
 
-## Specified type file format
+This feature is provided by [Lake Weed](https://github.com/tac0x2a/lake_weed).
+
+
+## Meta data of source
 
 General
 ```yml
-<source_id> :
-  <field_name> : <type>
-  <field_name> : <type>
+<source_id>:
+  types:
+    <field_name> : <type>
+    <field_name> : <type>
+
+<source_id>:
+  types:
+    <field_name> : <type>
+    <field_name> : <type>
   ...
 ```
+
+### Specified types
 
 Example
 ```yml
 weather:
-  temperature : double
-  location__longitude : double
-  location__latitude  : double
+  types:
+    city: string
+    city_code: int
+    temperature : double
+    location__longitude : double
+    location__latitude  : double
   ...
 ```
 

@@ -12,7 +12,8 @@ def parse_args():
     parser.add_argument('--schema-store', help='Schema store location', choices=['local', 'rdb'], default="local")
     parser.add_argument('--local-schema-dir', help='Schema DB directory path when schema-sotre is local', default="schemas")
 
-    parser.add_argument('--type-file', help='File path to specified column types')
+    parser.add_argument('--local-meta-store-file', help='Path to meta data store as local file. If this parameter skipped, meta data will be create on DB', default="")
+
     parser.add_argument('--tz', help='Timezone string will be used as default offset in parsing source string if it has no offset')
 
     parser.add_argument('--api-port', help='Port number of grebe Web API. It is disabled if this is not provided.', type=int, default=0)

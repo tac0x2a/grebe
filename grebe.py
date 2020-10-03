@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 
 import pika
-import yaml
 import os
-
+from pathlib import Path
 from concurrent import futures
 
 from grebe.grebe import Grebe
@@ -12,6 +11,7 @@ from grebe import parse_args as pa
 from grebe.dbms_clickhouse import dbms_client
 from grebe.schema_store_yaml import SchemaStoreYAML
 from grebe.schema_store_clickhouse import SchemaStoreClickhouse
+from grebe.meta_store_yaml import MetaStoreYAML
 from grebe import api
 
 # --------------------------------------------------------------------------------------------
@@ -27,6 +27,7 @@ if __name__ == '__main__':
 
     SCHEMA_STORE = args.schema_store
     SCHEMA_DIR = args.local_schema_dir
+    LOCAL_META_FILE = args.local_meta_store_file
 
     TZ_STR = args.tz
 
@@ -45,26 +46,27 @@ if __name__ == '__main__':
     client = dbms_client(DB_HOST, DB_PORT)
     logger.info(f"Clickhouse connected({DB_HOST}:{DB_PORT})")
 
-    # Loading specified type file
-    specified_types = {}
-    if args.type_file:
-        try:
-            with open(args.type_file, 'r') as tf:
-                specified_types = yaml.load(tf)
-                logger.info(f"Load specified types. {specified_types}")
-        except (FileNotFoundError, yaml.parser.ParserError, yaml.scanner.ScannerError) as e:
-            logger.warning(f"type-file load failed. ('{args.type_file}') ignored specified types. ({e})")
-
     # Load Schema
     if SCHEMA_STORE == 'rdb':
         schema_store_client = dbms_client(DB_HOST, DB_PORT)
         logger.info(f"Clickhouse connected({DB_HOST}:{DB_PORT}) for schema store")
-        store = SchemaStoreClickhouse(schema_store_client)
+        schema_store = SchemaStoreClickhouse(schema_store_client)
     else:
         schema_file = os.path.join(SCHEMA_DIR, f"schema_db_{DB_HOST}_{DB_PORT}.yml")
-        store = SchemaStoreYAML(schema_file)
+        schema_store = SchemaStoreYAML(schema_file)
 
-    grebe = Grebe(client, store, specified_types, MQ_QNAME, RETRY_MAX, TZ_STR, logger)
+    # Load Metastore
+    if len(LOCAL_META_FILE) > 0:
+        logger.info(f"MetaStore: local at {LOCAL_META_FILE}")
+        meta_file = Path(LOCAL_META_FILE)
+        meta_store = MetaStoreYAML(meta_file, logger)
+    else:
+        logger.info("MetaStore: DB")
+        # Todo change to db
+        meta_file = Path(LOCAL_META_FILE)
+        meta_store = MetaStoreYAML(meta_file, logger)
+
+    grebe = Grebe(client, schema_store, meta_store, MQ_QNAME, RETRY_MAX, TZ_STR, logger)
 
     def callback(channel, method, properties, body):
         grebe.callback(channel, method, properties, body)

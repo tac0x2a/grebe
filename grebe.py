@@ -11,8 +11,8 @@ from grebe import parse_args as pa
 from grebe.dbms_clickhouse import dbms_client
 from grebe.schema_store_yaml import SchemaStoreYAML
 from grebe.schema_store_clickhouse import SchemaStoreClickhouse
-from grebe.meta_store_yaml import MetaStoreYAML
-from grebe.meta_store_clickhouse import MetaStoreClickhouse
+from grebe.source_setting_store_yaml import SourceSettingStoreYAML
+from grebe.source_setting_store_clickhouse import SourceSettingStoreClickhouse
 from grebe import api
 
 # --------------------------------------------------------------------------------------------
@@ -28,7 +28,7 @@ if __name__ == '__main__':
 
     SCHEMA_STORE = args.schema_store
     SCHEMA_DIR = args.local_schema_dir
-    LOCAL_META_FILE = args.local_meta_store_file
+    LOCAL_SRC_SETTINGS_FILE = args.local_source_settings_file
 
     TZ_STR = args.tz
 
@@ -56,17 +56,17 @@ if __name__ == '__main__':
         schema_file = os.path.join(SCHEMA_DIR, f"schema_db_{DB_HOST}_{DB_PORT}.yml")
         schema_store = SchemaStoreYAML(schema_file)
 
-    # Load Metastore
-    if len(LOCAL_META_FILE) > 0:
-        logger.info(f"MetaStore: local at {LOCAL_META_FILE}")
-        meta_file = Path(LOCAL_META_FILE)
-        meta_store = MetaStoreYAML(meta_file, logger)
+    # Load SourceSetting store
+    if len(LOCAL_SRC_SETTINGS_FILE) > 0:
+        logger.info(f"SourceSettingStore: local at {LOCAL_SRC_SETTINGS_FILE}")
+        source_setting_file = Path(LOCAL_SRC_SETTINGS_FILE)
+        source_setting_store = SourceSettingStoreYAML(source_setting_file, logger)
     else:
-        logger.info("MetaStore: DB")
-        meta_store_client = dbms_client(DB_HOST, DB_PORT)
-        meta_store = MetaStoreClickhouse(meta_store_client, "__metastore", logger)
+        logger.info("SourceSettingStore: DB")
+        source_setting_store_client = dbms_client(DB_HOST, DB_PORT)
+        source_setting_store = SourceSettingStoreClickhouse(source_setting_store_client, "__source_setting_store", logger)
 
-    grebe = Grebe(client, schema_store, meta_store, MQ_QNAME, RETRY_MAX, TZ_STR, logger)
+    grebe = Grebe(client, schema_store, source_setting_store, MQ_QNAME, RETRY_MAX, TZ_STR, logger)
 
     def callback(channel, method, properties, body):
         grebe.callback(channel, method, properties, body)

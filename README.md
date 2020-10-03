@@ -40,6 +40,7 @@ $ ./grebe.py -h
 usage: grebe.py [-h] [-mh MH] [-mp MP] [-dh DH] [-dp DP]
                 [--schema-store {local,rdb}]
                 [--local-schema-dir LOCAL_SCHEMA_DIR]
+                [--local-source-settings-file LOCAL_SOURCE_SETTINGS_FILE]
                 [--type-file TYPE_FILE]
                 [--tz TZ]
                 [--api-port API_PORT]
@@ -65,8 +66,8 @@ optional arguments:
                         Schema store location
   --local-schema-dir LOCAL_SCHEMA_DIR
                         Schema DB directory path when schema-sotre is local
-  --type-file TYPE_FILE
-                        File path to specified column types
+  -local-source-settings-file LOCAL_SOURCE_SETTINGS_FILE
+                        Path to source settings as local file. If this parameter skipped, source setting will be create on DB
   --tz TZ               Timezone string will be used as default offset in parsing source string if it has no offset
   --api-port API_PORT   Port number of grebe Web API. It is disabled if this is not provided.
   --log-level {DEBUG,INFO,WARN,ERROR}
@@ -85,7 +86,7 @@ optional arguments:
 This feature is provided by [Lake Weed](https://github.com/tac0x2a/lake_weed).
 
 
-## Meta data of source
+## Settings each source
 
 General
 ```yml
@@ -136,7 +137,7 @@ Command line argument as json format will be shown.
 
 Example: `(200)`
 ```json
-{"api_port":8888,"dh":"localhost","dp":9000,"local_schema_dir":"schemas","log_file":null,"log_file_count":1000,"log_file_size":1000000,"log_format":"[%(levelname)s] %(asctime)s | %(pathname)s(L%(lineno)s) | %(message)s","log_level":"INFO","mh":"localhost","mp":5672,"queue_name":"nayco","retry_max_count":3,"schema_store":"rdb","type_file":null,"tz":"Asia/Tokyo"}
+{"api_port":8888,"dh":"localhost","dp":9000,"local_schema_dir":"schemas","local_source_settings_file":"","log_file":null,"log_file_count":1000,"log_file_size":1000000,"log_format":"[%(levelname)s] %(asctime)s | %(pathname)s(L%(lineno)s) | %(message)s","log_level":"INFO","mh":"localhost","mp":5672,"queue_name":"nayco","retry_max_count":3,"schema_store":"rdb","tz":"Asia/Tokyo"}
 ```
 
 ### `/schema_cache` : `GET`

@@ -8,7 +8,7 @@ services:
       - DB_HOST=<hostname> # Clickhouse host
       # - SCHEMA_STORE=local # Schema store location
       # - LOCAL_SCHEMA_DIR=schemas # Schema DB directory path when schema-sotre is local
-      # - LOCAL_METASTORE_FILE=/metastore.yml # Path to meta data store as local file. If this parameter skipped, meta data will be create on DB
+      # - LOCAL_SOURCE_SETTINGS_FILE=/source_settings.yml # Path to source settings file as local file. If this parameter skipped, source settings will be create on DB
       # - TZ_STR=Asia/Tokyo # timezone string from TZ database
       # - API_PORT=8888 # Port number of grebe Web API. It is disabled if this value is 0 or not provided.
       # - LOG_FILE_COUNT=1000    # Count of file files kept
@@ -22,4 +22,4 @@ services:
     volumes:
       - ./volume/logs:/logs
       - ./volume/schemas:/schemas
-      # - ./metastore.yml:/metastore.yml
+      # - ./source_settings.yml:/source_settings.yml

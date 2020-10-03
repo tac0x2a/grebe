@@ -43,16 +43,16 @@ def schema_cache_reload():
         return jsonify(result), 500
 
 
-@app.route('/metadata_cache')
-def metadata_cache():
-    res = [{'source_id': s, 'metadata': m} for s, m in _grebe.metadata_cache.items()]
+@app.route('/source_settings_cache')
+def source_settings__cache():
+    res = [{'source_id': s, 'source_settings': m} for s, m in _grebe.source_settings_cache.items()]
     return jsonify(res), 200
 
 
-@app.route('/metadata_cache/reload')
-def metadata_cache_reload():
+@app.route('/source_settings_cache/reload')
+def source_settings_cache_reload():
     try:
-        result = _grebe.reload_metadata()
+        result = _grebe.reload_source_settings()
         result['result'] = 'Success'
         return jsonify(result), 200
 

@@ -25,7 +25,7 @@ def query_create_data_table(columns, types, data_table_name):
 
     # Column is already Nullable with out array.
     for c, t in column_types_map.items():
-        if t is None:  # Todo this block is reached when not supported type is specified in meta store. Should be fix lake_weed.
+        if t is None:  # Todo this block is reached when not supported type is specified in source_settings store. Should be fix lake_weed.
             logger.error(f"The column {c} type is None!")
             continue
         if t.startswith("Array"):

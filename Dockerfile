@@ -41,8 +41,8 @@ ENV DB_PORT  9000
 # Schema store location
 ENV SCHEMA_STORE local
 
-# Path to meta data store as local file. If this parameter skipped, meta data will be create on DB
-ENV LOCAL_METASTORE_FILE ""
+# Path to source settings file as local file. If this parameter skipped, source settings will be create on DB
+ENV LOCAL_SOURCE_SETTINGS_FILE ""
 
 # Timezone string will be used as default offset in parsing source string if it has no offset
 ENV TZ_STR "UTC"
@@ -81,7 +81,7 @@ ENTRYPOINT python ./grebe.py ${MQ_QNAME} \
     -dh ${DB_HOST} -dp ${DB_PORT} \
     --schema-store ${SCHEMA_STORE}\
     --local-schema-dir ${LOCAL_SCHEMA_DIR}\
-    --local-meta-store-file ${LOCAL_METASTORE_FILE}\
+    --local-source-settings-file ${LOCAL_SOURCE_SETTINGS_FILE}\
     --tz "${TZ_STR}" \
     --api-port ${API_PORT} \
     --log-level ${LOG_LEVEL} \

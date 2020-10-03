@@ -81,7 +81,7 @@ ENTRYPOINT python ./grebe.py ${MQ_QNAME} \
     -dh ${DB_HOST} -dp ${DB_PORT} \
     --schema-store ${SCHEMA_STORE}\
     --local-schema-dir ${LOCAL_SCHEMA_DIR}\
-    --local-source-settings-file ${LOCAL_SOURCE_SETTINGS_FILE}\
+    --local-source-settings-file "${LOCAL_SOURCE_SETTINGS_FILE}" \
     --tz "${TZ_STR}" \
     --api-port ${API_PORT} \
     --log-level ${LOG_LEVEL} \

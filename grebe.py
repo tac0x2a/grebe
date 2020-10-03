@@ -64,7 +64,7 @@ if __name__ == '__main__':
     else:
         logger.info("SourceSettingStore: DB")
         source_setting_store_client = dbms_client(DB_HOST, DB_PORT)
-        source_setting_store = SourceSettingStoreClickhouse(source_setting_store_client, "__source_setting_store", logger)
+        source_setting_store = SourceSettingStoreClickhouse(source_setting_store_client, "__source_settings", logger)
 
     grebe = Grebe(client, schema_store, source_setting_store, MQ_QNAME, RETRY_MAX, TZ_STR, logger)
 

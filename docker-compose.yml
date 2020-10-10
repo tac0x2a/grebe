@@ -15,6 +15,7 @@ services:
       # - LOG_FILE_SIZE=1000000 # Size of each log file(KB)
       # - MQ_POST=5672 # RabbitMQ port
       # - DB_PORT=9000 # Clickhouse port by native connection
+      # - DB_NAME=default # Clickhouse DB name to store data
       # - LOG_LEVEL=INFO # Log level [DEBUG, INFO, WARN, ERROR]
       # - LOG_FORMAT='[%(levelname)s] %(asctime)s | %(pathname)s(L%(lineno)s) | %(message)s'  #  Log format by 'logging' package
       # - LOG_FILE=/logs/greabe.log # Log file name

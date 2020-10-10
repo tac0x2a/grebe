@@ -38,6 +38,9 @@ ENV DB_HOST  ''
 # Clickhouse port by native connection
 ENV DB_PORT  9000
 
+ # Clickhouse DB name to store data
+ENV DB_NAME "default"
+
 # Schema store location
 ENV SCHEMA_STORE local
 
@@ -78,7 +81,7 @@ VOLUME /schemas
 
 ENTRYPOINT python ./grebe.py ${MQ_QNAME} \
     -mh ${MQ_HOST} -mp ${MQ_PORT} \
-    -dh ${DB_HOST} -dp ${DB_PORT} \
+    -dh ${DB_HOST} -dp ${DB_PORT} -dn ${DB_NAME} \
     --schema-store ${SCHEMA_STORE}\
     --local-schema-dir ${LOCAL_SCHEMA_DIR}\
     --local-source-settings-file "${LOCAL_SOURCE_SETTINGS_FILE}" \

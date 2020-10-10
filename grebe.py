@@ -23,6 +23,7 @@ if __name__ == '__main__':
     MQ_POST = args.mp
     DB_HOST = args.dh
     DB_PORT = args.dp
+    DB_NAME = args.dn
     RETRY_MAX = args.retry_max_count
     API_PORT = args.api_port
 
@@ -44,12 +45,12 @@ if __name__ == '__main__':
     logger.info(f"RabbitMQ connected({MQ_HOST}:{MQ_POST})")
 
     # initialize clickhouse
-    client = dbms_client(DB_HOST, DB_PORT)
+    client = dbms_client(DB_HOST, DB_PORT, DB_NAME)
     logger.info(f"Clickhouse connected({DB_HOST}:{DB_PORT})")
 
     # Load Schema
     if SCHEMA_STORE == 'rdb':
-        schema_store_client = dbms_client(DB_HOST, DB_PORT)
+        schema_store_client = dbms_client(DB_HOST, DB_PORT, DB_NAME)
         logger.info(f"Clickhouse connected({DB_HOST}:{DB_PORT}) for schema store")
         schema_store = SchemaStoreClickhouse(schema_store_client)
     else:
@@ -63,7 +64,7 @@ if __name__ == '__main__':
         source_setting_store = SourceSettingStoreYAML(source_setting_file, logger)
     else:
         logger.info("SourceSettingStore: DB")
-        source_setting_store_client = dbms_client(DB_HOST, DB_PORT)
+        source_setting_store_client = dbms_client(DB_HOST, DB_PORT, DB_NAME)
         source_setting_store = SourceSettingStoreClickhouse(source_setting_store_client, "__source_settings", logger)
 
     grebe = Grebe(client, schema_store, source_setting_store, MQ_QNAME, RETRY_MAX, TZ_STR, logger)

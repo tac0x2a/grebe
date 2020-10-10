@@ -37,7 +37,7 @@ $ pytest
 ```sh
 $ ./grebe.py -h
 
-usage: grebe.py [-h] [-mh MH] [-mp MP] [-dh DH] [-dp DP]
+usage: grebe.py [-h] [-mh MH] [-mp MP] [-dh DH] [-dp DP] [-dn DN]
                 [--schema-store {local,rdb}]
                 [--local-schema-dir LOCAL_SCHEMA_DIR]
                 [--local-source-settings-file LOCAL_SOURCE_SETTINGS_FILE]
@@ -62,6 +62,7 @@ optional arguments:
   -mp MP                RabbitMQ port
   -dh DH                Clickhouse host
   -dp DP                Clickhouse port by native connection
+  -dn DN                Clickhouse DB name to store data
   --schema-store {local,rdb}
                         Schema store location
   --local-schema-dir LOCAL_SCHEMA_DIR

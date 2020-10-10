@@ -18,6 +18,9 @@ class TableNotFoundException(Exception):
 def dbms_client(db_host, db_port, db_name="default"):
     client = Client(db_host, db_port)
 
+    create_db_query = f"CREATE DATABASE IF NOT EXISTS {escape_symbol(db_name)}"
+    client.execute(create_db_query)
+
     use_db_query = f"USE {escape_symbol(db_name)}"
     client.execute(use_db_query)
     logger.info(f"created clickhouse db connection. db_name={db_name}")

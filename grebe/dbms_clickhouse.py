@@ -15,7 +15,7 @@ class TableNotFoundException(Exception):
         self.nested = nested
 
 
-def dbms_client(db_host, db_port, db_name="default"):
+def dbms_client(db_host, db_port, db_name):
     client = Client(db_host, db_port)
 
     create_db_query = f"CREATE DATABASE IF NOT EXISTS {escape_symbol(db_name)}"

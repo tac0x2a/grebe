@@ -8,6 +8,7 @@ def parse_args():
     parser.add_argument('-mp', help='RabbitMQ port', type=int, default=5672)
     parser.add_argument('-dh', help='Clickhouse host', default='localhost')
     parser.add_argument('-dp', help='Clickhouse port by native connection', type=int, default=9000)
+    parser.add_argument('-dn', help='Clickhouse DB name to store data', default='default')
 
     parser.add_argument('--schema-store', help='Schema store location', choices=['local', 'rdb'], default="local")
     parser.add_argument('--local-schema-dir', help='Schema DB directory path when schema-sotre is local', default="schemas")

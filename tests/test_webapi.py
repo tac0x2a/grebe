@@ -1,6 +1,6 @@
 import pytest
 
-from br2dl.webapi import app
+from grebe.api import app
 
 
 @pytest.fixture
@@ -12,4 +12,4 @@ def client():
 
 def test_web_api_simple(client):
     result = client.get('/')
-    assert b'{"hello":"grebe"}\n' == result.data
+    assert b'Grebe is running.' == result.data

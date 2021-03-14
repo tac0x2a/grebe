@@ -17,7 +17,7 @@ def mocked_grebe():
 
 @pytest.fixture(scope='function', autouse=True)
 def mocked_callback_args():
-    channel = MagicMock(name='channnel')
+    channel = MagicMock(name='channel')
     method = MagicMock(name='method')
     properties = MagicMock(name='properties')
     body = MagicMock(name='body')

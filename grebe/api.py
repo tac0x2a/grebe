@@ -1,64 +1,63 @@
 import json
-import traceback
+from fastapi import FastAPI, Response, status
 
-from flask import Flask, jsonify
-app = Flask(__name__)
+app = FastAPI()
 
 _args = None
 _grebe = None
 
-@app.route('/')
+
+@app.get('/', status_code=status.HTTP_200_OK)
 def hello_world():
-    return 'Grebe is running.', 200
+    return 'Grebe is running.'
 
 
-@app.route('/args')
+@app.get('/args', status_code=status.HTTP_200_OK)
 def arguments():
-    return jsonify(_args), 200
+    return _args
 
 
-@app.route('/specified_types')
-def specified_types():
-    return jsonify(_grebe.specified_types), 200
-
-
-@app.route('/schema_cache')
+@app.get('/schema_cache', status_code=status.HTTP_200_OK)
 def schema_cache():
     res = [{'source': json.loads(s)['source'], 'schema': json.loads(s)['schema'], 'table': t} for s, t in _grebe.schema_cache.items()]
-    return jsonify(res), 200
+    return res
 
 
-@app.route('/schema_cache/reload')
-def schema_cache_reload():
+@app.get('/schema_cache/reload', status_code=status.HTTP_200_OK)
+def schema_cache_reload(response: Response):
     try:
         result = _grebe.reload_schema()
         result['result'] = 'Success'
-        return jsonify(result), 200
+        return result
 
-    except Exception:
+    except Exception as e:
         result = {
             'result': 'Failed',
-            'stack_trace': traceback.format_exc()
+            'type': type(e).__name__,
+            'messages': e.args
         }
-        return jsonify(result), 500
+        response.status_code = 500
+        return result
 
 
-@app.route('/source_settings_cache')
+@app.get('/source_settings_cache', status_code=status.HTTP_200_OK)
 def source_settings__cache():
     res = [{'source_id': s, 'source_settings': m} for s, m in _grebe.source_settings_cache.items()]
-    return jsonify(res), 200
+    return res
 
 
-@app.route('/source_settings_cache/reload')
-def source_settings_cache_reload():
+@app.get('/source_settings_cache/reload', status_code=status.HTTP_200_OK)
+def source_settings_cache_reload(response: Response):
     try:
         result = _grebe.reload_source_settings()
         result['result'] = 'Success'
-        return jsonify(result), 200
+        return result
 
-    except Exception:
+    except Exception as e:
         result = {
             'result': 'Failed',
-            'stack_trace': traceback.format_exc()
+            'type': type(e).__name__,
+            'messages': e.args
         }
-        return jsonify(result), 500
+        response.status_code = 500
+        return result

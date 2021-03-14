@@ -17,11 +17,6 @@ def arguments():
     return jsonify(_args), 200
 
 
-@app.route('/specified_types')
-def specified_types():
-    return jsonify(_grebe.specified_types), 200
-
-
 @app.route('/schema_cache')
 def schema_cache():
     res = [{'source': json.loads(s)['source'], 'schema': json.loads(s)['schema'], 'table': t} for s, t in _grebe.schema_cache.items()]

@@ -67,6 +67,37 @@ def test_web_app_show_schema_cache(client):
     assert expected == json.loads(result.data)
 
 
+def test_web_app_reload_schema_cache(client):
+    grebe = Mock()
+    grebe.reload_schema.return_value = {'schema_count': 0, 'store': "<class 'grebe.schema_store_clickhouse.SchemaStoreClickhouse'>"}
+    api._grebe = grebe
+    result = client.get('/schema_cache/reload')
+    grebe.reload_schema.assert_called_with()
+
+    expected = {
+        'result': 'Success',
+        'schema_count': 0,
+        'store': "<class 'grebe.schema_store_clickhouse.SchemaStoreClickhouse'>"
+    }
+    assert expected == json.loads(result.data)
+
+
+def test_web_app_reload_schema_cache_failed(client):
+    grebe = Mock()
+    grebe.reload_schema.side_effect = Exception("Unknown Exception!!")
+    api._grebe = grebe
+    result = client.get('/schema_cache/reload')
+    grebe.reload_schema.assert_called_with()
+
+    expected = {
+        'result': 'Failed',
+        'type': 'Exception',
+        'messages': ['Unknown Exception!!']
+    }
+    assert expected == json.loads(result.data)
+    assert 500 == result.status_code
+
+
 def test_web_app_show_source_settings_cache_empty(client):
     grebe = Mock()
     grebe.source_settings_cache = {}
@@ -91,3 +122,33 @@ def test_web_app_show_source_settings_cache(client):
     ]
     print(json.loads(result.data))
     assert expected == json.loads(result.data)
+
+
+def test_web_app_reload_source_settings_cache(client):
+    grebe = Mock()
+    grebe.reload_source_settings.return_value = {'store': "<class 'grebe.schema_store_clickhouse.SchemaStoreClickhouse'>"}
+    api._grebe = grebe
+    result = client.get('/source_settings_cache/reload')
+    grebe.reload_source_settings.assert_called_with()
+
+    expected = {
+        'result': 'Success',
+        'store': "<class 'grebe.schema_store_clickhouse.SchemaStoreClickhouse'>"
+    }
+    assert expected == json.loads(result.data)
+
+
+def test_web_app_reload_source_settings_cache_failed(client):
+    grebe = Mock()
+    grebe.reload_source_settings.side_effect = Exception("Unknown Exception!!")
+    api._grebe = grebe
+    result = client.get('/source_settings_cache/reload')
+    grebe.reload_source_settings.assert_called_with()
+
+    expected = {
+        'result': 'Failed',
+        'type': 'Exception',
+        'messages': ['Unknown Exception!!']
+    }
+    assert expected == json.loads(result.data)
+    assert 500 == result.status_code

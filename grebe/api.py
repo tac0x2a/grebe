@@ -7,6 +7,7 @@ app = Flask(__name__)
 _args = None
 _grebe = None
 
+
 @app.route('/')
 def hello_world():
     return 'Grebe is running.', 200
@@ -30,10 +31,11 @@ def schema_cache_reload():
         result['result'] = 'Success'
         return jsonify(result), 200
 
-    except Exception:
+    except Exception as e:
         result = {
             'result': 'Failed',
-            'stack_trace': traceback.format_exc()
+            'type': type(e).__name__,
+            'messages': e.args
         }
         return jsonify(result), 500
 
@@ -51,9 +53,10 @@ def source_settings_cache_reload():
         result['result'] = 'Success'
         return jsonify(result), 200
 
-    except Exception:
+    except Exception as e:
         result = {
             'result': 'Failed',
-            'stack_trace': traceback.format_exc()
+            'type': type(e).__name__,
+            'messages': e.args
         }
         return jsonify(result), 500

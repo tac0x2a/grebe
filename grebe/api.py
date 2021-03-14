@@ -1,5 +1,6 @@
 import json
 from fastapi import FastAPI, Response, status
+import uvicorn
 
 app = FastAPI()
 
@@ -61,3 +62,6 @@ def source_settings_cache_reload(response: Response):
         }
         response.status_code = 500
         return result
+
+def run(host, port):
+    uvicorn.run(app, host=host, port=port)

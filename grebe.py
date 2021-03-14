@@ -79,7 +79,7 @@ if __name__ == '__main__':
             api._args = vars(args)
             api._grebe = grebe
             logger.info(f"Web server will be started with port:{API_PORT}")
-            api.app.run(host='0.0.0.0', port=API_PORT)
+            api.run(host='0.0.0.0', port=API_PORT)
         else:
             logger.info("Web API is disabled.")
 

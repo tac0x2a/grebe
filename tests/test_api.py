@@ -18,14 +18,14 @@ def test_web_api_simple(client):
     assert b'Grebe is running.' == result.data
 
 
-def test_web_app_show_arguments(client):
+def test_api_show_arguments(client):
     args = {"queue_name": "nayco"}
     api._args = args
     result = client.get('/args')
     assert args == json.loads(result.data)
 
 
-def test_web_app_show_schema_cache_empty(client):
+def test_api_show_schema_cache_empty(client):
     grebe = Mock()
     grebe.schema_cache = {}
 
@@ -34,7 +34,7 @@ def test_web_app_show_schema_cache_empty(client):
     assert [] == json.loads(result.data)
 
 
-def test_web_app_show_schema_cache(client):
+def test_api_show_schema_cache(client):
     grebe = Mock()
     grebe.schema_cache = {
         """
@@ -67,7 +67,7 @@ def test_web_app_show_schema_cache(client):
     assert expected == json.loads(result.data)
 
 
-def test_web_app_reload_schema_cache(client):
+def test_api_reload_schema_cache(client):
     grebe = Mock()
     grebe.reload_schema.return_value = {'schema_count': 0, 'store': "<class 'grebe.schema_store_clickhouse.SchemaStoreClickhouse'>"}
     api._grebe = grebe
@@ -82,7 +82,7 @@ def test_web_app_reload_schema_cache(client):
     assert expected == json.loads(result.data)
 
 
-def test_web_app_reload_schema_cache_failed(client):
+def test_api_reload_schema_cache_failed(client):
     grebe = Mock()
     grebe.reload_schema.side_effect = Exception("Unknown Exception!!")
     api._grebe = grebe
@@ -98,7 +98,7 @@ def test_web_app_reload_schema_cache_failed(client):
     assert 500 == result.status_code
 
 
-def test_web_app_show_source_settings_cache_empty(client):
+def test_api_show_source_settings_cache_empty(client):
     grebe = Mock()
     grebe.source_settings_cache = {}
 
@@ -107,7 +107,7 @@ def test_web_app_show_source_settings_cache_empty(client):
     assert [] == json.loads(result.data)
 
 
-def test_web_app_show_source_settings_cache(client):
+def test_api_show_source_settings_cache(client):
     grebe = Mock()
     grebe.source_settings_cache = {
         "city": {"Latitude": "Float64", "Longitude": "Float64"},
@@ -124,7 +124,7 @@ def test_web_app_show_source_settings_cache(client):
     assert expected == json.loads(result.data)
 
 
-def test_web_app_reload_source_settings_cache(client):
+def test_api_reload_source_settings_cache(client):
     grebe = Mock()
     grebe.reload_source_settings.return_value = {'store': "<class 'grebe.schema_store_clickhouse.SchemaStoreClickhouse'>"}
     api._grebe = grebe
@@ -138,7 +138,7 @@ def test_web_app_reload_source_settings_cache(client):
     assert expected == json.loads(result.data)
 
 
-def test_web_app_reload_source_settings_cache_failed(client):
+def test_api_reload_source_settings_cache_failed(client):
     grebe = Mock()
     grebe.reload_source_settings.side_effect = Exception("Unknown Exception!!")
     api._grebe = grebe

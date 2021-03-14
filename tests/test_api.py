@@ -1,28 +1,27 @@
 import pytest
 import json
 
+from fastapi.testclient import TestClient
 from unittest.mock import Mock
 
 from grebe import api
 
-
 @pytest.fixture
 def client():
-    api.app.config['TESTING'] = True
-    with api.app.test_client() as client:
-        yield client
+    client = TestClient(api.app)
+    yield client
 
 
 def test_web_api_simple(client):
     result = client.get('/')
-    assert b'Grebe is running.' == result.data
+    assert 'Grebe is running.' == result.json()
 
 
 def test_api_show_arguments(client):
     args = {"queue_name": "nayco"}
     api._args = args
     result = client.get('/args')
-    assert args == json.loads(result.data)
+    assert args == result.json()
 
 
 def test_api_show_schema_cache_empty(client):
@@ -31,7 +30,7 @@ def test_api_show_schema_cache_empty(client):
 
     api._grebe = grebe
     result = client.get('/schema_cache')
-    assert [] == json.loads(result.data)
+    assert [] == result.json()
 
 
 def test_api_show_schema_cache(client):
@@ -64,7 +63,7 @@ def test_api_show_schema_cache(client):
             "table": "city_pref"
         }
     ]
-    assert expected == json.loads(result.data)
+    assert expected == result.json()
 
 
 def test_api_reload_schema_cache(client):
@@ -79,7 +78,7 @@ def test_api_reload_schema_cache(client):
         'schema_count': 0,
         'store': "<class 'grebe.schema_store_clickhouse.SchemaStoreClickhouse'>"
     }
-    assert expected == json.loads(result.data)
+    assert expected == result.json()
 
 
 def test_api_reload_schema_cache_failed(client):
@@ -94,7 +93,7 @@ def test_api_reload_schema_cache_failed(client):
         'type': 'Exception',
         'messages': ['Unknown Exception!!']
     }
-    assert expected == json.loads(result.data)
+    assert expected == result.json()
     assert 500 == result.status_code
 
 
@@ -104,7 +103,7 @@ def test_api_show_source_settings_cache_empty(client):
 
     api._grebe = grebe
     result = client.get('/source_settings_cache')
-    assert [] == json.loads(result.data)
+    assert [] == result.json()
 
 
 def test_api_show_source_settings_cache(client):
@@ -120,8 +119,7 @@ def test_api_show_source_settings_cache(client):
         {"source_id": "city", "source_settings": {"Latitude": "Float64", "Longitude": "Float64"}},
         {"source_id": "weather", "source_settings": {"RainFall": "Float64"}}
     ]
-    print(json.loads(result.data))
-    assert expected == json.loads(result.data)
+    assert expected == result.json()
 
 
 def test_api_reload_source_settings_cache(client):
@@ -135,7 +133,7 @@ def test_api_reload_source_settings_cache(client):
         'result': 'Success',
         'store': "<class 'grebe.schema_store_clickhouse.SchemaStoreClickhouse'>"
     }
-    assert expected == json.loads(result.data)
+    assert expected == result.json()
 
 
 def test_api_reload_source_settings_cache_failed(client):
@@ -150,5 +148,5 @@ def test_api_reload_source_settings_cache_failed(client):
         'type': 'Exception',
         'messages': ['Unknown Exception!!']
     }
-    assert expected == json.loads(result.data)
+    assert expected == result.json()
     assert 500 == result.status_code

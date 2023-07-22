@@ -1,7 +1,7 @@
 ###### Requirements without Version Specifiers ######`
 python-dateutil==2.8.0
 pika==1.1.0
-clickhouse-driver==0.1.4
+clickhouse-driver==0.1.5
 PyYAML==5.4
 lakeweed==1.2.3
 fastapi==0.65.2
